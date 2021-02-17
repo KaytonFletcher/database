@@ -13,6 +13,16 @@ typedef enum { heap, sorted, tree } fType;
 
 class DBFile {
 private:
+  int currPage = 0;
+  int indexInPage = 0;
+
+  int numPages = 0;
+
+  ComparisonEngine comp;
+
+  // when a page has records that have not yet been written to the database
+  bool pageDirty = false;
+
   // current record in file
   Record *record = nullptr;
 

@@ -1,4 +1,5 @@
 #include "File.h"
+#include <stdexcept>
 
 using namespace std;
 
@@ -80,7 +81,6 @@ void Page ::ToBinary(char *bits) {
   for (int i = 0; i < numRecs; i++) {
     char *b = myRecs->Current(0)->GetBits();
 
-    // copy over the bits of the current record
     memcpy(curPos, b, ((int *)b)[0]);
     curPos += ((int *)b)[0];
 
@@ -155,7 +155,7 @@ void File ::GetPage(Page *putItHere, off_t whichPage) {
   }
 
   // read in the specified page
-  char *bits = new (std::nothrow) char[PAGE_SIZE];
+  char *bits = new (std::nothrow) char[PAGE_SIZE]();
   if (bits == NULL) {
     cout << "ERROR : Not enough memory. EXIT !!!\n";
     exit(1);
@@ -188,13 +188,15 @@ void File ::AddPage(Page *addMe, off_t whichPage) {
   }
 
   // now write the page
-  char *bits = new (std::nothrow) char[PAGE_SIZE];
+  char *bits = new char[PAGE_SIZE]();
+
   if (bits == NULL) {
     cout << "ERROR : Not enough memory. EXIT !!!\n";
     exit(1);
   }
 
   addMe->ToBinary(bits);
+
   lseek(myFilDes, PAGE_SIZE * whichPage, SEEK_SET);
   write(myFilDes, bits, PAGE_SIZE);
   delete[] bits;
@@ -223,7 +225,7 @@ void File ::Open(int fileLen, char *fName) {
   // see if there was an error
   if (myFilDes < 0) {
     cerr << "BAD!  Open did not work for " << fName << "\n";
-    exit(1);
+    throw runtime_error("Failed to create file");
   }
 
   // read in the buffer if needed

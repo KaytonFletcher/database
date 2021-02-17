@@ -6,12 +6,18 @@ ifdef linux
 tag = -n
 endif
 
-test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o CNF.o OrderMaker.o y.tab.o lex.yy.o test.o
-	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o CNF.o OrderMaker.o y.tab.o lex.yy.o test.o -lfl
+gtests.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o CNF.o OrderMaker.o BigQ.o Pipe.o y.tab.o lex.yy.o gtests.o
+	$(CC) -I . -I ./gtests -o gtests.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o CNF.o OrderMaker.o BigQ.o Pipe.o y.tab.o lex.yy.o gtests.o -lfl -lgtest -lpthread
+
+test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o CNF.o OrderMaker.o BigQ.o Pipe.o y.tab.o lex.yy.o test.o
+	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o CNF.o OrderMaker.o BigQ.o Pipe.o y.tab.o lex.yy.o test.o -lfl -lpthread
 	
 main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o CNF.o OrderMaker.o y.tab.o lex.yy.o main.o
-	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o CNF.o OrderMaker.o y.tab.o lex.yy.o main.o -lfl
-	
+	$(CC) -o main.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o CNF.o OrderMaker.o y.tab.o lex.yy.o main.o -lfl
+
+gtests.o: gtests/main.cc
+	$(CC) -g -o gtests.o -c gtests/main.cc
+
 test.o: test.cc
 	$(CC) -g -c test.cc
 
@@ -41,6 +47,12 @@ CNF.o: CNF.cc
 
 OrderMaker.o: OrderMaker.cc
 	$(CC) -g -c OrderMaker.cc
+
+BigQ.o: BigQ.cc
+	$(CC) -g -c BigQ.cc
+	
+Pipe.o: Pipe.cc
+	$(CC) -g -c Pipe.cc
 	
 y.tab.o: Parser.y
 	yacc -d Parser.y

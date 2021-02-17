@@ -3,7 +3,7 @@
 // returns a -1, 0, or 1 depending upon whether left is less then, equal to, or
 // greater than right, depending upon the OrderMaker
 int ComparisonEngine ::Compare(Record *left, Record *right,
-                               OrderMaker *orderUs) {
+                               OrderMaker *orderUs) const {
 
   char *val1, *val2;
 
