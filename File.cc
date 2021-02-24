@@ -16,6 +16,21 @@ Page ::Page() {
 
 Page ::~Page() { delete myRecs; }
 
+Page &Page::operator=(const Page &other) {
+  delete myRecs;
+
+  numRecs = other.numRecs;
+  curSizeInBytes = other.curSizeInBytes;
+  myRecs = other.myRecs;
+
+  return *this;
+}
+Page::Page(const Page &other) {
+  numRecs = other.numRecs;
+  curSizeInBytes = other.curSizeInBytes;
+  myRecs = other.myRecs;
+}
+
 void Page ::EmptyItOut() {
 
   // get rid of all of the records

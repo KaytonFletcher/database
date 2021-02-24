@@ -26,6 +26,13 @@ public:
   // for the given comparison
   int GetSortOrders(OrderMaker &left, OrderMaker &right);
 
+  // this returns an instance of the OrderMaker class that
+  // allows the CNF to be implemented using a sort-based
+  // algorithm such as a sort-merge join.  Returns a 0 if and
+  // only if it is impossible to determine an acceptable ordering
+  // for the given comparison
+  int GetSortOrders(OrderMaker &order_maker);
+
   // print the comparison structure to the screen
   void Print();
 

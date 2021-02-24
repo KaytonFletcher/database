@@ -29,6 +29,8 @@ private:
 public:
   Record();
   ~Record();
+  Record& operator=(const Record& other);
+  Record(const Record& other);
 
   void CopyBits(char *bits, int b_len);
   char *GetBits();

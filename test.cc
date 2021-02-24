@@ -1,6 +1,5 @@
 #include "test.h"
 
-
 void *producer(void *arg) {
 
   Pipe *myPipe = (Pipe *)arg;
@@ -9,7 +8,9 @@ void *producer(void *arg) {
   int counter = 0;
 
   DBFile dbfile;
-  dbfile.Open(rel->path());
+  if (!dbfile.Open(rel->path())) {
+    std::cout << "FAILED TO OPEN DATABASE" << std::endl;
+  }
   cout << " producer: opened DBFile " << rel->path() << endl;
   dbfile.MoveFirst();
 
@@ -25,6 +26,7 @@ void *producer(void *arg) {
   myPipe->ShutDown();
 
   cout << " producer: inserted " << counter << " recs into the pipe\n";
+  return NULL;
 }
 
 void *consumer(void *arg) {
@@ -47,12 +49,22 @@ void *consumer(void *arg) {
   Record rec[2];
   Record *last = NULL, *prev = NULL;
 
+  // t->order->Print();
+
   while (t->pipe->Remove(&rec[i % 2])) {
     prev = last;
     last = &rec[i % 2];
 
     if (prev && last) {
+
       if (ceng.Compare(prev, last, t->order) == 1) {
+        std::cout << "Index of error: " << i << std::endl;
+
+        std::cout << "PREV" << std::endl;
+        prev->Print(rel->schema());
+        std::cout << "LAST" << std::endl;
+        last->Print(rel->schema());
+        std::cout << "\n\n\n";
         err++;
       }
       if (t->write) {
@@ -80,6 +92,7 @@ void *consumer(void *arg) {
   if (err) {
     cerr << " consumer: " << err << " recs failed sorted order test \n" << endl;
   }
+  return NULL;
 }
 
 void test1(int option, int runlen) {

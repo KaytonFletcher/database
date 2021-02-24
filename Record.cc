@@ -11,6 +11,37 @@ Record ::~Record() {
   bits = NULL;
 }
 
+Record &Record::operator=(const Record &other) {
+  // this is a deep copy, so allocate the bits and move them over!
+  delete[] bits;
+
+  if (other.bits != NULL) {
+
+    bits = new (std::nothrow) char[((int *)other.bits)[0]];
+    if (bits == NULL) {
+      cout << "ERROR : Not enough memory. EXIT !!!\n";
+      exit(1);
+    }
+
+    memcpy(bits, other.bits, ((int *)other.bits)[0]);
+  }
+
+  return *this;
+}
+
+Record::Record(const Record &other) {
+  if (other.bits != NULL) {
+
+    bits = new (std::nothrow) char[((int *)other.bits)[0]];
+    if (bits == NULL) {
+      cout << "ERROR : Not enough memory. EXIT !!!\n";
+      exit(1);
+    }
+
+    memcpy(bits, other.bits, ((int *)other.bits)[0]);
+  }
+};
+
 int Record ::SuckNextRecord(Schema *mySchema, FILE *textFile) {
 
   // this is temporary storage

@@ -7,6 +7,7 @@
 
 #include "BigQ.h"
 #include "DBFile.h"
+#include "OrderMaker.h"
 #include "Pipe.h"
 #include "Record.h"
 
@@ -15,10 +16,9 @@ using namespace std;
 // make sure that the information below is correct
 
 char *catalog_path = "catalog";
-char *tpch_dir =
-    "/cise/tmp/dbi_sp11/DATA/10M/"; // dir where dbgen tpch files (extension
-                                    // *.tbl) can be found
-char *dbfile_dir = "";
+char *tpch_dir = "../P1/tables/"; // dir where dbgen tpch files (extension
+                                  // *.tbl) can be found
+char *dbfile_dir = "heap_dbs/";
 
 extern "C" {
 int yyparse(void); // defined in y.tab.c
@@ -75,8 +75,9 @@ public:
     CNF sort_pred;
     sort_pred.GrowFromParseTree(final, schema(),
                                 literal); // constructs CNF predicate
-    OrderMaker dummy;
-    sort_pred.GetSortOrders(sortorder, dummy);
+
+    sort_pred.Print();
+    sort_pred.GetSortOrders(sortorder);
   }
 };
 

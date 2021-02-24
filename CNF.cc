@@ -8,6 +8,8 @@ int CNF ::GetSortOrders(OrderMaker &left, OrderMaker &right) {
   left.numAtts = 0;
   right.numAtts = 0;
 
+  std::cout << "NUm ANDS: " << numAnds << std::endl;
+
   // loop through all of the disjunctions in the CNF and find those
   // that are acceptable for use in a sort ordering
   for (int i = 0; i < numAnds; i++) {
@@ -15,17 +17,20 @@ int CNF ::GetSortOrders(OrderMaker &left, OrderMaker &right) {
     // if we don't have a disjunction of length one, then it
     // can't be acceptable for use with a sort ordering
     if (orLens[i] != 1) {
+      std::cout << "Or lens != 1: " << orLens[i] << std::endl;
       continue;
     }
 
     // made it this far, so first verify that it is an equality check
     if (orList[i][0].op != Equals) {
+      std::cout << "Not an equality check!: " << orList[i][0].op << std::endl;
       continue;
     }
 
     // now verify that it operates over atts from both tables
     if (!((orList[i][0].operand1 == Left && orList[i][0].operand2 == Right) ||
           (orList[i][0].operand2 == Left && orList[i][0].operand1 == Right))) {
+
       continue;
     }
 
@@ -54,10 +59,52 @@ int CNF ::GetSortOrders(OrderMaker &left, OrderMaker &right) {
 
     // note that we have found two new attributes
     left.numAtts++;
-    right.numAtts++;
+    // right.numAtts++;
   }
 
   return left.numAtts;
+}
+
+int CNF ::GetSortOrders(OrderMaker &order_maker) {
+
+  // initialize the size of the OrderMakers
+  order_maker.numAtts = 0;
+
+  // loop through all of the disjunctions in the CNF and find those
+  // that are acceptable for use in a sort ordering
+  for (int i = 0; i < numAnds; i++) {
+
+    // if we don't have a disjunction of length one, then it
+    // can't be acceptable for use with a sort ordering
+    if (orLens[i] != 1) {
+      std::cout << "Or lens != 1: " << orLens[i] << std::endl;
+      continue;
+    }
+
+    // made it this far, so first verify that it is an equality check
+    if (orList[i][0].op != Equals) {
+      std::cout << "Not an equality check!: " << orList[i][0].op << std::endl;
+      continue;
+    }
+
+    // since we are here, we have found a join attribute!!!
+    // so all we need to do is add the new comparison info into the
+    // relevant structures
+    if (orList[i][0].operand1 == Left) {
+      order_maker.whichAtts[order_maker.numAtts] = orList[i][0].whichAtt2;
+      order_maker.whichTypes[order_maker.numAtts] = orList[i][0].attType;
+    }
+
+    if (orList[i][0].operand2 == Left) {
+      order_maker.whichAtts[order_maker.numAtts] = orList[i][0].whichAtt2;
+      order_maker.whichTypes[order_maker.numAtts] = orList[i][0].attType;
+    }
+
+    // note that we have found a new attribute
+    order_maker.numAtts++;
+  }
+
+  return order_maker.numAtts;
 }
 
 void CNF ::Print() {

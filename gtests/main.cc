@@ -1,46 +1,54 @@
-#include "../DBFile.h"
+#include "../BigQ.h"
+#include "../test.h"
 #include "gtest/gtest.h"
 
-TEST(CreateFile, CreateSucess) {
-  DBFile file;
-  int ret = file.Create("testfile.bin", heap, NULL);
-  ASSERT_EQ(ret, 1);
-}
-TEST(CreateFile, FailMissingDirectory) {
-  DBFile file;
-  // providing not found directory as part of file path leads to exception that
-  // causes file creation to fail
-  int ret = file.Create("bruh/testfile.bin", heap, NULL);
-  ASSERT_EQ(ret, 0);
-}
+TEST(BigQConstructor, FirstCreate) {
+  setup();
+  rel = n;
+  int buffsz = 100; // pipe cache size
+  Pipe input(buffsz);
+  Pipe output(buffsz);
 
-TEST(CreateFile, FailBadType) {
-  DBFile file;
-  // providing not found directory as part of file path leads to exception that
-  // causes file creation to fail
-  int ret = file.Create("testfile.bin", sorted, NULL);
-  ASSERT_EQ(ret, 0);
-}
+  Record temp;
+  int counter = 0;
 
+  DBFile dbfile;
+  if (!dbfile.Open("./heap_dbs/nation.bin")) {
+    std::cout << "FAILED TO OPEN DATABASE" << std::endl;
+  }
 
-TEST(CloseFile, CreateAndCloseFile) {
-  DBFile file;
-  int ret = file.Create("testfile.bin", heap, NULL);
-  ASSERT_EQ(ret, 1);
+  dbfile.MoveFirst();
 
-  ret = file.Close();
-  ASSERT_EQ(ret, 1);
-}
+  while (dbfile.GetNext(temp) == 1) {
+    input.Insert(&temp);
+  }
 
-TEST(OpenFile, OpenAfterCreate) {
-  DBFile file;
-  int ret = file.Create("testfile.bin", heap, NULL);
-  ASSERT_EQ(ret, 1);
+  dbfile.Close();
+  input.ShutDown();
 
-  ret = file.Close();
-  ASSERT_EQ(ret, 1);
-  ret = file.Open("testfile.bin");
-  ASSERT_EQ(ret, 1);
+  OrderMaker sortorder;
+  rel->get_sort_order(sortorder);
+
+  BigQ bq(input, output, sortorder, 1);
+
+  int i = 0;
+
+  Record rec[2];
+  Record *last = NULL, *prev = NULL;
+
+  ComparisonEngine ce;
+
+  while (output.Remove(&rec[i % 2])) {
+    prev = last;
+    last = &rec[i % 2];
+
+    if (prev && last) {
+      int comp = ce.Compare(prev, last, &sortorder);
+      ASSERT_EQ(comp, 0);
+    }
+
+    i++;
+  }
 }
 
 int main(int argc, char **argv) {
