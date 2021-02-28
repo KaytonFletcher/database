@@ -1,4 +1,4 @@
-#include "test.h"
+#include "../test.h"
 
 void *producer(void *arg) {
 
@@ -8,16 +8,16 @@ void *producer(void *arg) {
   int counter = 0;
 
   DBFile dbfile;
-  if (!dbfile.Open(rel->path())) {
+  if (!dbfile.Open(Test::rel->path())) {
     std::cout << "FAILED TO OPEN DATABASE" << std::endl;
   }
-  cout << " producer: opened DBFile " << rel->path() << endl;
+  std::cout << " producer: opened DBFile " << Test::rel->path() << std::endl;
   dbfile.MoveFirst();
 
   while (dbfile.GetNext(temp) == 1) {
     counter += 1;
     if (counter % 100000 == 0) {
-      cerr << " producer: " << counter << endl;
+      std::cerr << " producer: " << counter << std::endl;
     }
     myPipe->Insert(&temp);
   }
@@ -25,7 +25,7 @@ void *producer(void *arg) {
   dbfile.Close();
   myPipe->ShutDown();
 
-  cout << " producer: inserted " << counter << " recs into the pipe\n";
+  std::cout << " producer: inserted " << counter << " recs into the pipe\n";
   return NULL;
 }
 
@@ -39,7 +39,7 @@ void *consumer(void *arg) {
   char outfile[100];
 
   if (t->write) {
-    sprintf(outfile, "%s.bigq", rel->path());
+    sprintf(outfile, "%s.bigq", Test::rel->path());
     dbfile.Create(outfile, heap, NULL);
   }
 
@@ -48,8 +48,6 @@ void *consumer(void *arg) {
 
   Record rec[2];
   Record *last = NULL, *prev = NULL;
-
-  // t->order->Print();
 
   while (t->pipe->Remove(&rec[i % 2])) {
     prev = last;
@@ -61,9 +59,9 @@ void *consumer(void *arg) {
         std::cout << "Index of error: " << i << std::endl;
 
         std::cout << "PREV" << std::endl;
-        prev->Print(rel->schema());
+        prev->Print(Test::rel->schema());
         std::cout << "LAST" << std::endl;
-        last->Print(rel->schema());
+        last->Print(Test::rel->schema());
         std::cout << "\n\n\n";
         err++;
       }
@@ -72,25 +70,25 @@ void *consumer(void *arg) {
       }
     }
     if (t->print) {
-      last->Print(rel->schema());
+      last->Print(Test::rel->schema());
     }
     i++;
   }
 
-  cout << " consumer: removed " << i << " recs from the pipe\n";
+  std::cout << " consumer: removed " << i << " recs from the pipe\n";
 
   if (t->write) {
     if (last) {
       dbfile.Add(*last);
     }
-    cerr << " consumer: recs removed written out as heap DBFile at " << outfile
-         << endl;
+    std::cerr << " consumer: recs removed written out as heap DBFile at " << outfile
+         << std::endl;
     dbfile.Close();
   }
-  cerr << " consumer: " << (i - err) << " recs out of " << i
+  std::cerr << " consumer: " << (i - err) << " recs out of " << i
        << " recs in sorted order \n";
   if (err) {
-    cerr << " consumer: " << err << " recs failed sorted order test \n" << endl;
+    std::cerr << " consumer: " << err << " recs failed sorted order test \n" << std::endl;
   }
   return NULL;
 }
@@ -99,7 +97,7 @@ void test1(int option, int runlen) {
 
   // sort order for records
   OrderMaker sortorder;
-  rel->get_sort_order(sortorder);
+  Test::rel->get_sort_order(sortorder);
 
   int buffsz = 100; // pipe cache size
   Pipe input(buffsz);
@@ -126,39 +124,36 @@ void test1(int option, int runlen) {
 }
 
 int main(int argc, char *argv[]) {
-
-  setup();
-
-  relation *rel_ptr[] = {n, r, c, p, ps, o, li};
+  Test testProgram;
 
   int tindx = 0;
   while (tindx < 1 || tindx > 3) {
-    cout << " select test option: \n";
-    cout << " \t 1. sort \n";
-    cout << " \t 2. sort + display \n";
-    cout << " \t 3. sort + write \n\t ";
-    cin >> tindx;
+    std::cout << " select test option: \n";
+    std::cout << " \t 1. sort \n";
+    std::cout << " \t 2. sort + display \n";
+    std::cout << " \t 3. sort + write \n\t ";
+    std::cin >> tindx;
   }
 
   int findx = 0;
   while (findx < 1 || findx > 7) {
-    cout << "\n select dbfile to use: \n";
-    cout << "\t 1. nation \n";
-    cout << "\t 2. region \n";
-    cout << "\t 3. customer \n";
-    cout << "\t 4. part \n";
-    cout << "\t 5. partsupp \n";
-    cout << "\t 6. orders \n";
-    cout << "\t 7. lineitem \n \t ";
-    cin >> findx;
+    std::cout << "\n select dbfile to use: \n";
+    std::cout << "\t 1. nation \n";
+    std::cout << "\t 2. region \n";
+    std::cout << "\t 3. customer \n";
+    std::cout << "\t 4. part \n";
+    std::cout << "\t 5. partsupp \n";
+    std::cout << "\t 6. orders \n";
+    std::cout << "\t 7. lineitem \n \t ";
+    std::cin >> findx;
   }
-  rel = rel_ptr[findx - 1];
+  Test::rel = testProgram.relations[findx - 1];
 
   int runlen;
-  cout << "\t\n specify runlength:\n\t ";
-  cin >> runlen;
+  std::cout << "\t\n specify runlength:\n\t ";
+  std::cin >> runlen;
 
   test1(tindx, runlen);
 
-  cleanup();
+  testProgram.cleanup();
 }

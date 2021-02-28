@@ -5,10 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../db_core/Record.h"
+
 #include "CNF.h"
 #include "Comparison.h"
 #include "OrderMaker.h"
-#include "Record.h"
+
 
 class ComparisonEngine {
 

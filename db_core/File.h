@@ -9,7 +9,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "ComparisonEngine.h"
+#include "../compare/ComparisonEngine.h"
+
 #include "TwoWayList.h"
 
 class Record;

@@ -78,7 +78,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 20 "Parser.y"
+#line 20 "dependencies/Parser.y"
 
  	struct Operand *myOperand;
 	struct ComparisonOp *myComparison; 

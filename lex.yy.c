@@ -456,14 +456,14 @@ static int yy_more_len = 0;
 #define YY_MORE_ADJ (yy_more_len)
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "Lexer.l"
+#line 1 "dependencies/Lexer.l"
 /***********************************************************************
  * SECTION 1
  ***********************************************************************/
 /* The code in %{ %} is included as it is in lex.yy.c file
  * it has C global variables, prototypes, and comments 
  */
-#line 10 "Lexer.l"
+#line 10 "dependencies/Lexer.l"
 
 #include <string.h> // For strdup()
 #include <stdlib.h> // For malloc()
@@ -703,7 +703,7 @@ YY_DECL
 		}
 
 	{
-#line 36 "Lexer.l"
+#line 36 "dependencies/Lexer.l"
 
 
 #line 709 "lex.yy.c"
@@ -771,56 +771,56 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 38 "Lexer.l"
+#line 38 "dependencies/Lexer.l"
 return('(');
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 40 "Lexer.l"
+#line 40 "dependencies/Lexer.l"
 return(')');
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 42 "Lexer.l"
+#line 42 "dependencies/Lexer.l"
 return('<');
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 44 "Lexer.l"
+#line 44 "dependencies/Lexer.l"
 return('>');
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 46 "Lexer.l"
+#line 46 "dependencies/Lexer.l"
 return('=');
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 48 "Lexer.l"
+#line 48 "dependencies/Lexer.l"
 {yylval.actualChars = strdup(yytext);
   			return(Int); 
 		        }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 52 "Lexer.l"
+#line 52 "dependencies/Lexer.l"
 {yylval.actualChars = strdup(yytext); 
   			return(Float);
 			}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 56 "Lexer.l"
+#line 56 "dependencies/Lexer.l"
 return(OR);
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 58 "Lexer.l"
+#line 58 "dependencies/Lexer.l"
 return(AND);
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 60 "Lexer.l"
+#line 60 "dependencies/Lexer.l"
 {/* take care of ' in a string */
 	 		if (yytext[yyleng - 2] == '\\') {
      				yymore();
@@ -833,7 +833,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 70 "Lexer.l"
+#line 70 "dependencies/Lexer.l"
 {yylval.actualChars = strdup(yytext);
   			return(Name);
 			}     
@@ -841,22 +841,22 @@ YY_RULE_SETUP
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 74 "Lexer.l"
+#line 74 "dependencies/Lexer.l"
 lineno++;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 76 "Lexer.l"
+#line 76 "dependencies/Lexer.l"
 ;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 78 "Lexer.l"
+#line 78 "dependencies/Lexer.l"
 yyerror("LEX_ERROR: invalid character");
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 80 "Lexer.l"
+#line 80 "dependencies/Lexer.l"
 ECHO;
 	YY_BREAK
 #line 862 "lex.yy.c"
@@ -1864,7 +1864,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 80 "Lexer.l"
+#line 80 "dependencies/Lexer.l"
 
 
 void yyerror(char *s) {

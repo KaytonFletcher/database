@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "ParseTree.h"
+#include "../ParseTree.h"
 #include "Schema.h"
 
 // Basic record data structure. Data is actually stored in "bits" field. The

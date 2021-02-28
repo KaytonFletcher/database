@@ -1,32 +1,10 @@
-#include "DBFile.h"
-#include <stdexcept>
+#include "HeapDB.h"
 
-DBFile::DBFile()
-    : currPage(0), indexInPage(0), numPages(0), pageDirty(false),
-      file(new File()) {}
+HeapDB::HeapDB() : currPage(0), indexInPage(0), numPages(0), pageDirty(false) {}
 
-DBFile::~DBFile() { delete this->file; }
+void HeapDB::Create(File *file, void *startup) { this->file = file; }
 
-int DBFile::Create(const char *f_path, fType f_type, void *startup) {
-  if (f_type != heap) {
-    return 0;
-  }
-  size_t len = strlen(f_path) + 1;
-  char *f_path_copy = new char[len]();
-  strncpy(f_path_copy, f_path, len);
-
-  try{
-  this->file->Open(0, f_path_copy);
-  } catch(std::runtime_error) {
-     delete[] f_path_copy;
-    return 0;
-  }
-
-  delete[] f_path_copy;
-  return 1;
-}
-
-void DBFile::Load(Schema &f_schema, const char *loadpath) {
+void HeapDB::Load(Schema &f_schema, const char *loadpath) {
 
   Record temp;
 
@@ -38,23 +16,17 @@ void DBFile::Load(Schema &f_schema, const char *loadpath) {
   fclose(tableFile);
 }
 
-int DBFile::Open(const char *f_path) {
-  size_t len = strlen(f_path) + 1;
-  char *f_path_copy = new char[len]();
-  strncpy(f_path_copy, f_path, len);
-  this->file->Open(1, f_path_copy);
-  delete[] f_path_copy;
-
+void HeapDB::Open(File *file) {
+  this->file = file;
   this->numPages = this->file->GetLength();
-  return 1;
 }
 
-void DBFile::MoveFirst() {
+void HeapDB::MoveFirst() {
   this->currPage = 0;
   this->indexInPage = 0;
 }
 
-int DBFile::Close() {
+int HeapDB::Close() {
   if (this->pageDirty) {
     this->file->AddPage(this->pageBuffer, numPages++);
     delete this->pageBuffer;
@@ -64,7 +36,7 @@ int DBFile::Close() {
   return 1;
 }
 
-void DBFile::Add(Record &rec) {
+void HeapDB::Add(Record &rec) {
   if (pageDirty) {
     int ret = this->pageBuffer->Append(&rec);
 
@@ -90,11 +62,11 @@ void DBFile::Add(Record &rec) {
   }
 }
 
-int DBFile::GetNext(Record &fetchMe) {
+int HeapDB::GetNext(Record &fetchMe) {
   if (this->pageDirty) {
     // adds page at numPages and increments numPages
     this->file->AddPage(this->pageBuffer, numPages++);
-    // TODO: Maybe delete page here
+
     delete this->pageBuffer;
     this->pageBuffer = nullptr;
     this->pageDirty = false;
@@ -129,7 +101,7 @@ int DBFile::GetNext(Record &fetchMe) {
   return 1;
 }
 
-int DBFile::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
+int HeapDB::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
 
   if (GetNext(fetchme) == 0) {
     return 0;

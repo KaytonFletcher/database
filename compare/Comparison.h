@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Defs.h"
-#include "Record.h"
+#include "../db_core/Defs.h"
+#include "../db_core/Record.h"
 
 // This stores an individual comparison that is part of a CNF
 class Comparison {

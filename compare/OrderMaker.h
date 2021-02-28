@@ -1,7 +1,7 @@
 #ifndef ORDERMAKER_H
 #define ORDERMAKER_H
 
-#include "Schema.h"
+#include "../db_core/Schema.h"
 
 // This structure encapsulates a sort order for records
 class OrderMaker {

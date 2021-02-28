@@ -1,10 +1,11 @@
 #ifndef CNF_H
 #define CNF_H
 
+#include "../db_core/Record.h"
+#include "../db_core/Schema.h"
+
 #include "Comparison.h"
 #include "OrderMaker.h"
-#include "Record.h"
-#include "Schema.h"
 
 // This structure stores a CNF expression that is to be evaluated
 // during query execution

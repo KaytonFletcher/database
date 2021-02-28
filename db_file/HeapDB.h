@@ -1,24 +1,16 @@
 #pragma once
 
-#include <cstring>
+#include <stdexcept>
 
-#include "Defs.h"
-#include "File.h"
-#include "Record.h"
-#include "Schema.h"
+#include "../db_core/File.h"
+#include "../db_core/Record.h"
 
-typedef enum { heap, sorted, tree } fType;
+#include "./InternalDBFile.h"
 
-// stub DBFile header..replace it with your own DBFile.h
-
-class DBFile {
-private:
+class HeapDB : public InternalDBFile {
   int currPage = 0;
   int indexInPage = 0;
-
   int numPages = 0;
-
-  ComparisonEngine comp;
 
   // when a page has records that have not yet been written to the database
   bool pageDirty = false;
@@ -26,18 +18,14 @@ private:
   // current record in file
   Record *record = nullptr;
 
-  // File that is acting as heap-based database
-  File *file = nullptr;
-
   // Single-page buffer for reading and writing from file
   Page *pageBuffer = nullptr;
 
 public:
-  DBFile();
-  ~DBFile();
+  HeapDB();
 
-  int Create(const char *fpath, fType file_type, void *startup);
-  int Open(const char *fpath);
+  void Create(File *file, void *startup);
+  void Open(File* file);
   int Close();
 
   void Load(Schema &myschema, const char *loadpath);

@@ -5,22 +5,20 @@
 #include <iostream>
 #include <queue>
 #include <thread>
+#include <utility>
 #include <vector>
 
+#include "../compare/ComparisonEngine.h"
 #include "File.h"
 #include "Pipe.h"
 #include "Record.h"
 
-using namespace std;
-
 struct RunInfo {
   int numPagesLeft;
   int currIndex;
-  int startingIndex;
 
   RunInfo(int numPages, int startingIndex)
-      : currIndex(startingIndex), startingIndex(startingIndex),
-        numPagesLeft(numPages) {}
+      : numPagesLeft(numPages), currIndex(startingIndex) {}
 };
 class BigQ {
   Pipe &in;

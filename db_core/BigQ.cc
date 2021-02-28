@@ -1,8 +1,4 @@
 #include "BigQ.h"
-#include "ComparisonEngine.h"
-#include "File.h"
-#include <queue>
-#include <utility>
 
 void BigQ::merge(std::vector<RunInfo> &runInfo) {
   auto compare = [this](std::pair<int, Record> lhs,
@@ -24,7 +20,7 @@ void BigQ::merge(std::vector<RunInfo> &runInfo) {
   // ex. 3 runs with 4 pages each
   // [0,1,2,3], [4,5,6,7], [8,9,10,11]
   // will grab [0, 4, 8] first
-  for (int j = 0; j < runInfo.size(); j++) {
+  for (uint j = 0; j < runInfo.size(); j++) {
     if (runInfo[j].numPagesLeft) {
       file.GetPage(&runPages[j], runInfo[j].currIndex);
       runInfo[j].currIndex++;
@@ -35,7 +31,7 @@ void BigQ::merge(std::vector<RunInfo> &runInfo) {
   }
 
   // Fills queue with initial pages first records
-  for (int i = 0; i < runInfo.size(); i++) {
+  for (uint i = 0; i < runInfo.size(); i++) {
     Record temp;
     if (runPages[i].GetFirst(&temp)) {
       queue.push(std::make_pair(i, temp));
@@ -108,7 +104,7 @@ void BigQ::readAndSort() {
           return (ce.Compare(&r1, &r2, &sortorder) < 0) ? true : false;
         });
 
-        int recordIndex = 0;
+        uint recordIndex = 0;
         for (int i = runlen; i > 0; i--) {
           Page temp;
 
@@ -169,7 +165,7 @@ void BigQ::readAndSort() {
     return (ce.Compare(&r1, &r2, &sortorder) < 0) ? true : false;
   });
 
-  int recordIndex = 0;
+  uint recordIndex = 0;
 
   for (int i = numPages; i > 0; i--) {
     Page temp;

@@ -1,24 +1,18 @@
-#ifndef TEST_H
-#define TEST_H
+#pragma once
+
+#include <cmath>
 #include <iostream>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
-#include "BigQ.h"
-#include "DBFile.h"
-#include "OrderMaker.h"
-#include "Pipe.h"
-#include "Record.h"
-
-using namespace std;
-
-// make sure that the information below is correct
-
-char *catalog_path = "catalog";
-char *tpch_dir = "../P1/tables/"; // dir where dbgen tpch files (extension
-                                  // *.tbl) can be found
-char *dbfile_dir = "heap_dbs/";
+#include "compare/CNF.h"
+#include "db_core/BigQ.h"
+#include "db_core/Pipe.h"
+#include "db_core/Record.h"
+#include "db_core/Relation.h"
+#include "db_file/DBFile.h"
 
 extern "C" {
 int yyparse(void); // defined in y.tab.c
@@ -33,84 +27,75 @@ typedef struct {
   bool write;
 } testutil;
 
-class relation {
-
-private:
-  char *rname;
-  char *prefix;
-  char rpath[100];
-  Schema *rschema;
-
+class Test {
 public:
-  relation(char *_name, Schema *_schema, char *_prefix)
-      : rname(_name), rschema(_schema), prefix(_prefix) {
-    sprintf(rpath, "%s%s.bin", prefix, rname);
-  }
-  char *name() { return rname; }
-  char *path() { return rpath; }
-  Schema *schema() { return rschema; }
-  void info() {
-    cout << " relation info\n";
-    cout << "\t name: " << name() << endl;
-    cout << "\t path: " << path() << endl;
+  Test()
+      : supplier("supplier"), partsupp("partsupp"), part("part"),
+        nation("nation"), customer("customer"), orders("orders"),
+        region("region"), lineitem("lineitem") {
+
+    std::cout
+        << " \n** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **\n";
+    std::cout << " catalog location: \t" << catalog_path << std::endl;
+    std::cout << " tpch files dir: \t" << tpch_dir << std::endl;
+    std::cout << " heap files dir: \t" << dbfile_dir << std::endl;
+    std::cout << " \n\n";
   }
 
-  void get_cnf(CNF &cnf_pred, Record &literal) {
-    cout << " Enter CNF predicate (when done press ctrl-D):\n\t";
-    if (yyparse() != 0) {
-      cout << "Can't parse your CNF.\n";
-      exit(1);
-    }
-    cnf_pred.GrowFromParseTree(final, schema(),
-                               literal); // constructs CNF predicate
-  }
-  void get_sort_order(OrderMaker &sortorder) {
-    cout << "\n specify sort ordering (when done press ctrl-D):\n\t ";
-    if (yyparse() != 0) {
-      cout << "Can't parse your sort CNF.\n";
-      exit(1);
-    }
-    cout << " \n";
-    Record literal;
-    CNF sort_pred;
-    sort_pred.GrowFromParseTree(final, schema(),
-                                literal); // constructs CNF predicate
+  const std::string supplier = "supplier";
+  const std::string partsupp = "partsupp";
+  const std::string part = "part";
+  const std::string nation = "nation";
+  const std::string customer = "customer";
+  const std::string orders = "orders";
+  const std::string region = "region";
+  const std::string lineitem = "lineitem";
 
-    sort_pred.Print();
-    sort_pred.GetSortOrders(sortorder);
+  // This file is used to parse the database schemas
+  inline static const std::string catalog_path = "catalog";
+
+  // dir where dbgen tpch files (extension *.tbl) can be found
+  inline static const std::string dbfile_dir = "";
+
+  inline static const std::string tpch_dir = "./p1/tables/";
+
+  static Relation *rel;
+
+  Relation *relations[8] = { // nation
+      new Relation(nation.c_str(),
+                   new Schema(catalog_path.c_str(), nation.c_str()),
+                   dbfile_dir.c_str()),
+      // region
+      new Relation(region.c_str(),
+                   new Schema(catalog_path.c_str(), region.c_str()),
+                   dbfile_dir.c_str()),
+      // customer
+      new Relation(customer.c_str(),
+                   new Schema(catalog_path.c_str(), customer.c_str()),
+                   dbfile_dir.c_str()),
+      // part
+      new Relation(part.c_str(), new Schema(catalog_path.c_str(), part.c_str()),
+                   dbfile_dir.c_str()),
+      // partsupplier
+      new Relation(partsupp.c_str(),
+                   new Schema(catalog_path.c_str(), partsupp.c_str()),
+                   dbfile_dir.c_str()),
+      // orders
+      new Relation(orders.c_str(),
+                   new Schema(catalog_path.c_str(), orders.c_str()),
+                   dbfile_dir.c_str()),
+      // lineitem
+      new Relation(lineitem.c_str(),
+                   new Schema(catalog_path.c_str(), lineitem.c_str()),
+                   dbfile_dir.c_str()),
+
+      new Relation(supplier.c_str(),
+                   new Schema(catalog_path.c_str(), supplier.c_str()),
+                   dbfile_dir.c_str())};
+
+  void cleanup() {
+    for (int i = 0; i < 8; i++) {
+      delete relations[i];
+    }
   }
 };
-
-relation *rel;
-
-char *supplier = "supplier";
-char *partsupp = "partsupp";
-char *part = "part";
-char *nation = "nation";
-char *customer = "customer";
-char *orders = "orders";
-char *region = "region";
-char *lineitem = "lineitem";
-
-relation *s, *p, *ps, *n, *li, *r, *o, *c;
-
-void setup() {
-  cout << " \n** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **\n";
-  cout << " catalog location: \t" << catalog_path << endl;
-  cout << " tpch files dir: \t" << tpch_dir << endl;
-  cout << " heap files dir: \t" << dbfile_dir << endl;
-  cout << " \n\n";
-
-  s = new relation(supplier, new Schema(catalog_path, supplier), dbfile_dir);
-  ps = new relation(partsupp, new Schema(catalog_path, partsupp), dbfile_dir);
-  p = new relation(part, new Schema(catalog_path, part), dbfile_dir);
-  n = new relation(nation, new Schema(catalog_path, nation), dbfile_dir);
-  li = new relation(lineitem, new Schema(catalog_path, lineitem), dbfile_dir);
-  r = new relation(region, new Schema(catalog_path, region), dbfile_dir);
-  o = new relation(orders, new Schema(catalog_path, orders), dbfile_dir);
-  c = new relation(customer, new Schema(catalog_path, customer), dbfile_dir);
-}
-
-void cleanup() { delete s, p, ps, n, li, r, o, c; }
-
-#endif
