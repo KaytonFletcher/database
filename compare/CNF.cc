@@ -8,8 +8,6 @@ int CNF ::GetSortOrders(OrderMaker &left, OrderMaker &right) {
   left.numAtts = 0;
   right.numAtts = 0;
 
-  std::cout << "NUm ANDS: " << numAnds << std::endl;
-
   // loop through all of the disjunctions in the CNF and find those
   // that are acceptable for use in a sort ordering
   for (int i = 0; i < numAnds; i++) {
@@ -59,7 +57,7 @@ int CNF ::GetSortOrders(OrderMaker &left, OrderMaker &right) {
 
     // note that we have found two new attributes
     left.numAtts++;
-    // right.numAtts++;
+    right.numAtts++;
   }
 
   return left.numAtts;

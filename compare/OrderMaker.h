@@ -2,6 +2,7 @@
 #define ORDERMAKER_H
 
 #include "../db_core/Schema.h"
+#include <istream>
 
 // This structure encapsulates a sort order for records
 class OrderMaker {
@@ -20,6 +21,10 @@ public:
 
   // print to the screen
   void Print();
+
+  friend std::istream &operator>>(std::istream &is, OrderMaker &o); 
+
+  friend std::ostream &operator<<(std::ostream &os, OrderMaker &o); 
 };
 
 #endif

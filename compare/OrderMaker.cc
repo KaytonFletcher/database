@@ -47,3 +47,29 @@ void OrderMaker ::Print() {
       printf("String\n");
   }
 }
+
+std::istream &operator>>(std::istream &is, OrderMaker &o) {
+  is >> o.numAtts;
+  std::cout << "Reading in num atts: " << o.numAtts << std::endl;
+
+  for (int i = 0; i < o.numAtts; i++) {
+    is >> o.whichAtts[i];
+    int temp;
+
+    is >> temp;
+
+    o.whichTypes[i] = static_cast<Type>(temp);
+  }
+  return is;
+}
+
+std::ostream &operator<<(std::ostream &os, OrderMaker &o) {
+  os << o.numAtts;
+  std::cout << "Writing out num atts: " << o.numAtts << std::endl;
+
+  for (int i = 0; i < o.numAtts; i++) {
+    os << " " << o.whichAtts[i] << " ";
+    os << o.whichTypes[i];
+  }
+  return os;
+}

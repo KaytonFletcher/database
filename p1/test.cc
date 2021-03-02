@@ -6,14 +6,14 @@ using namespace std;
 void test1() {
 
   DBFile dbfile;
-  cout << " DBFile will be created at " << Test::rel->path() << endl;
-  dbfile.Create(Test::rel->path(), heap, NULL);
+  cout << " DBFile will be created at " << DBTest::rel->path() << endl;
+  dbfile.Create(DBTest::rel->path(), heap, NULL);
 
   char tbl_path[100]; // construct path of the tpch flat text file
-  sprintf(tbl_path, "%s%s.tbl", Test::tpch_dir.c_str(), Test::rel->name());
+  sprintf(tbl_path, "%s%s.tbl", DBTest::tpch_dir.c_str(), DBTest::rel->name());
   cout << " tpch file will be loaded from " << tbl_path << endl;
 
-  dbfile.Load(*(Test::rel->schema()), tbl_path);
+  dbfile.Load(*(DBTest::rel->schema()), tbl_path);
   dbfile.Close();
 }
 
@@ -21,7 +21,7 @@ void test1() {
 void test2() {
 
   DBFile dbfile;
-  dbfile.Open(Test::rel->path());
+  dbfile.Open(DBTest::rel->path());
   dbfile.MoveFirst();
 
   Record temp;
@@ -29,7 +29,7 @@ void test2() {
   int counter = 0;
   while (dbfile.GetNext(temp) == 1) {
     counter += 1;
-    temp.Print(Test::rel->schema());
+    temp.Print(DBTest::rel->schema());
     if (counter % 10000 == 0) {
       cout << counter << "\n";
     }
@@ -41,14 +41,14 @@ void test2() {
 // scan of a DBfile and apply a filter predicate
 void test3() {
 
-  cout << " Filter with CNF for : " << Test::rel->name() << "\n";
+  cout << " Filter with CNF for : " << DBTest::rel->name() << "\n";
 
   CNF cnf;
   Record literal;
-  Test::rel->get_cnf(cnf, literal);
+  DBTest::rel->get_cnf(cnf, literal);
 
   DBFile dbfile;
-  dbfile.Open(Test::rel->path());
+  dbfile.Open(DBTest::rel->path());
   dbfile.MoveFirst();
 
   Record temp;
@@ -56,7 +56,7 @@ void test3() {
   int counter = 0;
   while (dbfile.GetNext(temp, cnf, literal) == 1) {
     counter += 1;
-    temp.Print(Test::rel->schema());
+    temp.Print(DBTest::rel->schema());
     if (counter % 10000 == 0) {
       cout << counter << "\n";
     }
@@ -66,7 +66,7 @@ void test3() {
 }
 
 int main() {
-  Test testProgram;
+  DBTest testProgram;
 
   void (*test)();
 
@@ -82,19 +82,20 @@ int main() {
   }
 
   int findx = 0;
-  while (findx < 1 || findx > 7) {
+  while (findx < 1 || findx > 8) {
     cout << "\n select table: \n";
     cout << "\t 1. nation \n";
     cout << "\t 2. region \n";
     cout << "\t 3. customer \n";
     cout << "\t 4. part \n";
     cout << "\t 5. partsupp \n";
-    cout << "\t 6. orders \n";
-    cout << "\t 7. lineitem \n \t ";
+    cout << "\t 6. supplier \n";
+    cout << "\t 7. orders \n";
+    cout << "\t 8. lineitem \n \t ";
     cin >> findx;
   }
 
-  Test::rel = testProgram.relations[findx - 1];
+  DBTest::rel = testProgram.relations[findx - 1];
   test = test_ptr[tindx - 1];
 
   test();

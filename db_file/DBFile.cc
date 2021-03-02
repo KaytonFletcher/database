@@ -14,27 +14,21 @@ int DBFile::Create(const char *f_path, fType f_type, void *startup) {
 
   std::string filePath(f_path);
 
-  // size_t len = strlen(f_path) + 1;
-  // char *f_path_copy = new char[len]();
-  // strncpy(f_path_copy, f_path, len);
-
   File *file = new File;
 
   try {
     file->Open(0, const_cast<char *>(filePath.c_str()));
-  } catch (std::runtime_error&) {
-    // delete[] f_path_copy;
+  } catch (std::runtime_error &) {
     return 0;
   }
-
-  // delete[] f_path_copy;
 
   if (f_type == heap) {
     db = new HeapDB();
     std::ofstream metaFile(filePath + ".meta");
 
     if (metaFile.good()) {
-      metaFile.write("heap", 4);
+      metaFile.write("heap\n", 6);
+      metaFile.close();
     } else {
       return 0;
     }
@@ -43,7 +37,9 @@ int DBFile::Create(const char *f_path, fType f_type, void *startup) {
     std::ofstream metaFile(filePath + ".meta");
 
     if (metaFile.good()) {
-      metaFile.write("sorted", 6);
+      StartupInfo *startupInfo = static_cast<StartupInfo *>(startup);
+
+      metaFile << "sorted\n" << startupInfo->l << "\n" << *startupInfo->o;
     } else {
       return 0;
     }
@@ -52,7 +48,7 @@ int DBFile::Create(const char *f_path, fType f_type, void *startup) {
   }
 
   this->isOpen = true;
-  db->Create(file, startup);
+  db->Create(file, filePath, startup);
 
   return 1;
 }
@@ -70,16 +66,11 @@ int DBFile::Open(const char *f_path) {
 
   std::string filePath(f_path);
 
-  // size_t len = strlen(f_path) + 1;
-  // char *f_path_copy = new char[len]();
-  // strncpy(f_path_copy, f_path, len);
-
   File *file = new File;
 
   try {
     file->Open(1, const_cast<char *>(filePath.c_str()));
-  } catch (std::runtime_error&) {
-    // delete[] f_path_copy;
+  } catch (std::runtime_error &) {
     return 0;
   }
 
@@ -98,11 +89,9 @@ int DBFile::Open(const char *f_path) {
     return 0;
   }
 
-  // delete[] f_path_copy;
-
   this->isOpen = true;
-  db->Open(file);
-
+  db->Open(file, filePath, metaFile);
+  metaFile.close();
   return 1;
 }
 

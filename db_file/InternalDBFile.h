@@ -6,6 +6,7 @@
 #include "../db_core/Schema.h"
 
 #include "../compare/ComparisonEngine.h"
+#include <fstream>
 
 class InternalDBFile {
 protected:
@@ -15,8 +16,9 @@ protected:
   ComparisonEngine comp;
 
 public:
-  virtual void Create(File* file, void *startup) = 0;
-  virtual void Open(File* file) = 0;
+  virtual void Create(File *file, std::string &fileName, void *startup) = 0;
+  virtual void Open(File *file, std::string &fileName,
+                    std::ifstream &metaFile) = 0;
   virtual int Close() = 0;
 
   virtual void Load(Schema &myschema, const char *loadpath) = 0;

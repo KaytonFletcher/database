@@ -2,20 +2,38 @@
 
 #include <stdexcept>
 
+#include "../db_core/BigQ.h"
 #include "../db_core/Defs.h"
 #include "../db_core/File.h"
+#include "../db_core/Pipe.h"
 #include "../db_core/Record.h"
 #include "../db_core/Schema.h"
 
 #include "./InternalDBFile.h"
 
+struct StartupInfo {
+  OrderMaker *o;
+  int l;
+};
+
 class SortedDB : public InternalDBFile {
   int currPage = 0;
-  int indexInPage = 0;
-  int numPages = 0;
 
-  // when a page has records that have not yet been written to the database
-  bool pageDirty = false;
+  std::string fileName;
+
+  int runLength = 0;
+
+  Pipe* inPipe;
+  Pipe* outPipe;
+
+  BigQ* sorter;
+ 
+  // provided to define how the database records are sorted
+  OrderMaker order;
+
+  enum Mode { Writing, Reading };
+
+  Mode mode = Reading;
 
   // current record in file
   Record *record = nullptr;
@@ -23,11 +41,14 @@ class SortedDB : public InternalDBFile {
   // Single-page buffer for reading and writing from file
   Page *pageBuffer = nullptr;
 
+  void merge();
+
 public:
   SortedDB();
+  ~SortedDB();
 
-  void Create(File *file, void *startup);
-  void Open(File* file);
+  void Create(File *file, std::string& fileName, void *startup);
+  void Open(File *file, std::string& fileName, std::ifstream &meta);
   int Close();
 
   void Load(Schema &myschema, const char *loadpath);

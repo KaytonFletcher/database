@@ -6,8 +6,6 @@ void BigQ::merge(std::vector<RunInfo> &runInfo) {
     return ce.Compare(&lhs.second, &rhs.second, &sortorder) > 0 ? true : false;
   };
 
-  std::cout << "NUM RUNS: " << runInfo.size() << std::endl;
-
   std::priority_queue<std::pair<int, Record>,
                       std::vector<std::pair<int, Record>>, decltype(compare)>
       queue(compare);
@@ -119,7 +117,6 @@ void BigQ::readAndSort() {
 
         runInfo.push_back(RunInfo(numPagesinRun, totalPages - numPagesinRun));
 
-        std::cout << "Num Records in run: " << numRecordsInRun << std::endl;
         numRecordsInRun = 0;
 
         // Reset data structures for next run

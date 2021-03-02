@@ -50,7 +50,7 @@ Both `gtests.out` and `test.out` require user input. For `gtests.out`, it will r
 The unit tests created with gtest are all located in `gtests/main.cc`. The gtests created are simple and only test the BigQ constructor as requested. It was not possible to test the other member functions, as calling the BigQ constructor automatically spawns a thread that calls them.
 
 ## output1.txt Output
-The output for running the shell script `runTestCases.sh` is shown below:
+The output for running the shell script `runDBTestCases.sh` is shown below:
 
 ![Import File](screenshots/2021-02-18-223330_1918x875_scrot.png)
 

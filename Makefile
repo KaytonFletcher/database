@@ -15,7 +15,7 @@ dev.out: y.tab.o lex.yy.o
 	$(CC) -o dev.out $(DEV_FLAGS) $(CORE_FILES) ./p2_part2/test.cc -lfl -lpthread
 
 gtests.out: y.tab.o lex.yy.o 
-	$(CC) -o gtests.out $(PROD_FLAGS) $(CORE_FILES) ./gtests/main.cc -lfl -lgtest -lpthread
+	$(CC) -g -o gtests.out $(PROD_FLAGS) $(CORE_FILES) ./gtests/main.cc -lfl -lgtest -lpthread
 
 test.out: y.tab.o lex.yy.o 
 	$(CC) -o test.out $(PROD_FLAGS) $(CORE_FILES) ./p2_part2/test.cc -lfl -lpthread
@@ -24,7 +24,7 @@ test2_1.out: y.tab.o lex.yy.o
 	$(CC) -o test2_1.out $(PROD_FLAGS) $(CORE_FILES) ./p2_part1/test.cc -lfl -lpthread
 
 test1.out: y.tab.o lex.yy.o 
-	$(CC) -o test1.out $(PROD_FLAGS) $(CORE_FILES) ./p2_part2/test.cc -lfl -lpthread
+	$(CC) -o test1.out $(PROD_FLAGS) $(CORE_FILES) ./p1/test.cc -lfl -lpthread
 	
 y.tab.o: dependencies/Parser.y
 	yacc -d dependencies/Parser.y

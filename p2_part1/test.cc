@@ -8,10 +8,10 @@ void *producer(void *arg) {
   int counter = 0;
 
   DBFile dbfile;
-  if (!dbfile.Open(Test::rel->path())) {
+  if (!dbfile.Open(DBTest::rel->path())) {
     std::cout << "FAILED TO OPEN DATABASE" << std::endl;
   }
-  std::cout << " producer: opened DBFile " << Test::rel->path() << std::endl;
+  std::cout << " producer: opened DBFile " << DBTest::rel->path() << std::endl;
   dbfile.MoveFirst();
 
   while (dbfile.GetNext(temp) == 1) {
@@ -39,7 +39,7 @@ void *consumer(void *arg) {
   char outfile[100];
 
   if (t->write) {
-    sprintf(outfile, "%s.bigq", Test::rel->path());
+    sprintf(outfile, "%s.bigq", DBTest::rel->path());
     dbfile.Create(outfile, heap, NULL);
   }
 
@@ -59,9 +59,9 @@ void *consumer(void *arg) {
         std::cout << "Index of error: " << i << std::endl;
 
         std::cout << "PREV" << std::endl;
-        prev->Print(Test::rel->schema());
+        prev->Print(DBTest::rel->schema());
         std::cout << "LAST" << std::endl;
-        last->Print(Test::rel->schema());
+        last->Print(DBTest::rel->schema());
         std::cout << "\n\n\n";
         err++;
       }
@@ -70,7 +70,7 @@ void *consumer(void *arg) {
       }
     }
     if (t->print) {
-      last->Print(Test::rel->schema());
+      last->Print(DBTest::rel->schema());
     }
     i++;
   }
@@ -97,7 +97,7 @@ void test1(int option, int runlen) {
 
   // sort order for records
   OrderMaker sortorder;
-  Test::rel->get_sort_order(sortorder);
+  DBTest::rel->get_sort_order(sortorder);
 
   int buffsz = 100; // pipe cache size
   Pipe input(buffsz);
@@ -124,7 +124,7 @@ void test1(int option, int runlen) {
 }
 
 int main(int argc, char *argv[]) {
-  Test testProgram;
+  DBTest testProgram;
 
   int tindx = 0;
   while (tindx < 1 || tindx > 3) {
@@ -136,18 +136,19 @@ int main(int argc, char *argv[]) {
   }
 
   int findx = 0;
-  while (findx < 1 || findx > 7) {
+  while (findx < 1 || findx > 8) {
     std::cout << "\n select dbfile to use: \n";
     std::cout << "\t 1. nation \n";
     std::cout << "\t 2. region \n";
     std::cout << "\t 3. customer \n";
     std::cout << "\t 4. part \n";
     std::cout << "\t 5. partsupp \n";
-    std::cout << "\t 6. orders \n";
-    std::cout << "\t 7. lineitem \n \t ";
+    std::cout << "\t 6. supplier \n";
+    std::cout << "\t 7. orders \n";
+    std::cout << "\t 8. lineitem \n \t ";
     std::cin >> findx;
   }
-  Test::rel = testProgram.relations[findx - 1];
+  DBTest::rel = testProgram.relations[findx - 1];
 
   int runlen;
   std::cout << "\t\n specify runlength:\n\t ";

@@ -6,18 +6,22 @@ void test3();
 
 int add_data(FILE *src, int numrecs, int &res) {
   DBFile dbfile;
-  dbfile.Open(Test::rel->path());
+  dbfile.Open(DBTest::rel->path());
   Record temp;
 
   int proc = 0;
   int xx = 20000;
-  while ((res = temp.SuckNextRecord(Test::rel->schema(), src)) &&
-         ++proc < numrecs) {
+  res = temp.SuckNextRecord(DBTest::rel->schema(), src);
+
+  while (res && proc < numrecs) {
+    proc++;
     dbfile.Add(temp);
     if (proc == xx)
       std::cerr << "\t ";
     if (proc % xx == 0)
       std::cerr << ".";
+
+    res = temp.SuckNextRecord(DBTest::rel->schema(), src);
   }
 
   dbfile.Close();
@@ -28,7 +32,10 @@ int add_data(FILE *src, int numrecs, int &res) {
 void test1() {
 
   OrderMaker o;
-  Test::rel->get_sort_order(o);
+  DBTest::rel->get_sort_order(o);
+
+  std::cin.clear();
+  clearerr(stdin);
 
   int runlen = 0;
   while (runlen < 1) {
@@ -41,12 +48,12 @@ void test1() {
   } startup = {&o, runlen};
 
   DBFile dbfile;
-  std::cout << "\n output to dbfile : " << Test::rel->path() << std::endl;
-  dbfile.Create(Test::rel->path(), sorted, &startup);
+  std::cout << "\n output to dbfile : " << DBTest::rel->path() << std::endl;
+  dbfile.Create(DBTest::rel->path(), sorted, &startup);
   dbfile.Close();
 
   char tbl_path[100];
-  sprintf(tbl_path, "%s%s.tbl", Test::tpch_dir.c_str(), Test::rel->name());
+  sprintf(tbl_path, "%s%s.tbl", DBTest::tpch_dir.c_str(), DBTest::rel->name());
   std::cout << " input from file : " << tbl_path << std::endl;
 
   FILE *tblfile = fopen(tbl_path, "r");
@@ -57,7 +64,8 @@ void test1() {
   while (proc && res) {
     int x = 0;
     while (x < 1 || x > 3) {
-      std::cout << "\n select option for : " << Test::rel->path() << std::endl;
+      std::cout << "\n select option for : " << DBTest::rel->path()
+                << std::endl;
       std::cout << " \t 1. add a few (1 to 1k recs)\n";
       std::cout << " \t 2. add a lot (1k to 1e+06 recs) \n";
       std::cout << " \t 3. run some query \n \t ";
@@ -81,9 +89,9 @@ void test1() {
 // sequential scan of a DBfile
 void test2() {
 
-  std::cout << " scan : " << Test::rel->path() << "\n";
+  std::cout << " scan : " << DBTest::rel->path() << "\n";
   DBFile dbfile;
-  dbfile.Open(Test::rel->path());
+  dbfile.Open(DBTest::rel->path());
   dbfile.MoveFirst();
 
   Record temp;
@@ -91,7 +99,7 @@ void test2() {
   int cnt = 0;
   std::cerr << "\t";
   while (dbfile.GetNext(temp) && ++cnt) {
-    temp.Print(Test::rel->schema());
+    temp.Print(DBTest::rel->schema());
     if (cnt % 10000) {
       std::cerr << ".";
     }
@@ -104,10 +112,10 @@ void test3() {
 
   CNF cnf;
   Record literal;
-  Test::rel->get_cnf(cnf, literal);
+  DBTest::rel->get_cnf(cnf, literal);
 
   DBFile dbfile;
-  dbfile.Open(Test::rel->path());
+  dbfile.Open(DBTest::rel->path());
   dbfile.MoveFirst();
 
   Record temp;
@@ -115,19 +123,19 @@ void test3() {
   int cnt = 0;
   std::cerr << "\t";
   while (dbfile.GetNext(temp, cnf, literal) && ++cnt) {
-    temp.Print(Test::rel->schema());
+    temp.Print(DBTest::rel->schema());
     if (cnt % 10000 == 0) {
       std::cerr << ".";
     }
   }
-  std::cout << "\n query over " << Test::rel->path() << " returned " << cnt
+  std::cout << "\n query over " << DBTest::rel->path() << " returned " << cnt
             << " recs\n";
   dbfile.Close();
 }
 
 int main(int argc, char *argv[]) {
 
-  Test testProgram;
+  DBTest testProgram;
 
   void (*test_ptr[])() = {&test1, &test2, &test3};
   void (*test)();
@@ -154,7 +162,7 @@ int main(int argc, char *argv[]) {
     std::cout << "\t 8. lineitem \n \t ";
     std::cin >> findx;
   }
-  Test::rel = testProgram.relations[findx - 1];
+  DBTest::rel = testProgram.relations[findx - 1];
 
   test = test_ptr[tindx - 1];
   test();

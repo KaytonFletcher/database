@@ -9,7 +9,6 @@
 
 class HeapDB : public InternalDBFile {
   int currPage = 0;
-  int indexInPage = 0;
   int numPages = 0;
 
   // when a page has records that have not yet been written to the database
@@ -24,8 +23,8 @@ class HeapDB : public InternalDBFile {
 public:
   HeapDB();
 
-  void Create(File *file, void *startup);
-  void Open(File* file);
+  void Create(File *file, std::string &fileName, void *startup);
+  void Open(File *file, std::string &fileName, std::ifstream &meta);
   int Close();
 
   void Load(Schema &myschema, const char *loadpath);

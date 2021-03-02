@@ -1,54 +1,24 @@
-#include "../BigQ.h"
+#include "../db_file/SortedDB.h"
 #include "../test.h"
 #include "gtest/gtest.h"
 
-TEST(BigQConstructor, FirstCreate) {
-  setup();
-  rel = n;
-  int buffsz = 100; // pipe cache size
-  Pipe input(buffsz);
-  Pipe output(buffsz);
+TEST(CreateSorted, FirstCreate) {
+  DBTest testProgram;
+  DBFile file;
+  StartupInfo startup;
+  startup.l = 3;
+  OrderMaker order;
+  
+  DBTest::rel = testProgram.relations[0];
+  
+  DBTest::rel->get_sort_order(order);
+  startup.o = &order;
 
-  Record temp;
-  int counter = 0;
+  file.Create("test.db", sorted, &startup);
+  
+  file.Close();
 
-  DBFile dbfile;
-  if (!dbfile.Open("./heap_dbs/nation.bin")) {
-    std::cout << "FAILED TO OPEN DATABASE" << std::endl;
-  }
-
-  dbfile.MoveFirst();
-
-  while (dbfile.GetNext(temp) == 1) {
-    input.Insert(&temp);
-  }
-
-  dbfile.Close();
-  input.ShutDown();
-
-  OrderMaker sortorder;
-  rel->get_sort_order(sortorder);
-
-  BigQ bq(input, output, sortorder, 1);
-
-  int i = 0;
-
-  Record rec[2];
-  Record *last = NULL, *prev = NULL;
-
-  ComparisonEngine ce;
-
-  while (output.Remove(&rec[i % 2])) {
-    prev = last;
-    last = &rec[i % 2];
-
-    if (prev && last) {
-      int comp = ce.Compare(prev, last, &sortorder);
-      ASSERT_EQ(comp, 0);
-    }
-
-    i++;
-  }
+  file.Open("test.db");
 }
 
 int main(int argc, char **argv) {

@@ -1,8 +1,11 @@
 #include "HeapDB.h"
+#include <fstream>
 
-HeapDB::HeapDB() : currPage(0), indexInPage(0), numPages(0), pageDirty(false) {}
+HeapDB::HeapDB() : currPage(0), numPages(0), pageDirty(false) {}
 
-void HeapDB::Create(File *file, void *startup) { this->file = file; }
+void HeapDB::Create(File *file, std::string &fileName, void *startup) {
+  this->file = file;
+}
 
 void HeapDB::Load(Schema &f_schema, const char *loadpath) {
 
@@ -16,15 +19,12 @@ void HeapDB::Load(Schema &f_schema, const char *loadpath) {
   fclose(tableFile);
 }
 
-void HeapDB::Open(File *file) {
+void HeapDB::Open(File *file, std::string &fileName, std::ifstream &meta) {
   this->file = file;
   this->numPages = this->file->GetLength();
 }
 
-void HeapDB::MoveFirst() {
-  this->currPage = 0;
-  this->indexInPage = 0;
-}
+void HeapDB::MoveFirst() { this->currPage = 0; }
 
 int HeapDB::Close() {
   if (this->pageDirty) {
@@ -44,7 +44,7 @@ void HeapDB::Add(Record &rec) {
     if (ret == 0) {
       // adds page at numPages and increments numPages
       this->file->AddPage(this->pageBuffer, numPages++);
-      // TODO: Maybe delete page here
+
       delete this->pageBuffer;
       this->pageBuffer = nullptr;
       this->pageDirty = false;
@@ -92,7 +92,6 @@ int HeapDB::GetNext(Record &fetchMe) {
       return 0;
     } else {
       currPage++;
-      indexInPage = 0;
       // recursively determine if next page will have a valid record
       return GetNext(fetchMe);
     }

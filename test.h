@@ -27,9 +27,9 @@ typedef struct {
   bool write;
 } testutil;
 
-class Test {
+class DBTest {
 public:
-  Test()
+  DBTest()
       : supplier("supplier"), partsupp("partsupp"), part("part"),
         nation("nation"), customer("customer"), orders("orders"),
         region("region"), lineitem("lineitem") {
@@ -54,12 +54,13 @@ public:
   // This file is used to parse the database schemas
   inline static const std::string catalog_path = "catalog";
 
-  // dir where dbgen tpch files (extension *.tbl) can be found
+  // dir where .bin files created by DBFile class can be found or created
   inline static const std::string dbfile_dir = "";
 
+  // dir where dbgen tpch files (extension *.tbl) can be found
   inline static const std::string tpch_dir = "./p1/tables/";
 
-  static Relation *rel;
+  inline static Relation *rel = nullptr;
 
   Relation *relations[8] = { // nation
       new Relation(nation.c_str(),
@@ -80,6 +81,10 @@ public:
       new Relation(partsupp.c_str(),
                    new Schema(catalog_path.c_str(), partsupp.c_str()),
                    dbfile_dir.c_str()),
+      // supplier
+      new Relation(supplier.c_str(),
+                   new Schema(catalog_path.c_str(), supplier.c_str()),
+                   dbfile_dir.c_str()),
       // orders
       new Relation(orders.c_str(),
                    new Schema(catalog_path.c_str(), orders.c_str()),
@@ -87,10 +92,6 @@ public:
       // lineitem
       new Relation(lineitem.c_str(),
                    new Schema(catalog_path.c_str(), lineitem.c_str()),
-                   dbfile_dir.c_str()),
-
-      new Relation(supplier.c_str(),
-                   new Schema(catalog_path.c_str(), supplier.c_str()),
                    dbfile_dir.c_str())};
 
   void cleanup() {
