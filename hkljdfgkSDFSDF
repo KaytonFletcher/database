@@ -1,0 +1,6 @@
+BEGIN
+tempSchema
+wherever
+att0 String
+att1 String
+END

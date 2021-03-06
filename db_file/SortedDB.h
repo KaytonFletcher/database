@@ -31,7 +31,7 @@ class SortedDB : public InternalDBFile {
   // provided to define how the database records are sorted
   OrderMaker order;
 
-  enum Mode { Writing, Reading };
+  enum Mode { Writing, Reading, Querying };
 
   Mode mode = Reading;
 
@@ -41,7 +41,11 @@ class SortedDB : public InternalDBFile {
   // Single-page buffer for reading and writing from file
   Page *pageBuffer = nullptr;
 
+  OrderMaker query;
+
+  bool binarySearch(Record& recFound, Record &literal, CNF &cnf);
   void merge();
+  void cleanup();
 
 public:
   SortedDB();

@@ -11,12 +11,12 @@
 #include "Comparison.h"
 #include "OrderMaker.h"
 
-
 class ComparisonEngine {
 
 private:
   int Run(Record *left, Record *literal, Comparison *c);
   int Run(Record *left, Record *right, Record *literal, Comparison *c);
+  int helperComp(char *val1, char *val2, Comparison *c);
 
 public:
   // this version of Compare is for sorting.  The OrderMaker struct
@@ -43,6 +43,8 @@ public:
 
   // like the last one, but for unary operations
   int Compare(Record *left, Record *literal, CNF *myComparison);
+
+  int Compare(Record *left, Record *literal, CNF *comp, OrderMaker *query);
 };
 
 #endif

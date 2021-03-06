@@ -50,7 +50,7 @@ void OrderMaker ::Print() {
 
 std::istream &operator>>(std::istream &is, OrderMaker &o) {
   is >> o.numAtts;
-  std::cout << "Reading in num atts: " << o.numAtts << std::endl;
+  // std::cout << "Reading in num atts: " << o.numAtts << std::endl;
 
   for (int i = 0; i < o.numAtts; i++) {
     is >> o.whichAtts[i];
@@ -65,7 +65,7 @@ std::istream &operator>>(std::istream &is, OrderMaker &o) {
 
 std::ostream &operator<<(std::ostream &os, OrderMaker &o) {
   os << o.numAtts;
-  std::cout << "Writing out num atts: " << o.numAtts << std::endl;
+  // std::cout << "Writing out num atts: " << o.numAtts << std::endl;
 
   for (int i = 0; i < o.numAtts; i++) {
     os << " " << o.whichAtts[i] << " ";

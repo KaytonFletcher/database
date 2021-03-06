@@ -1,4 +1,5 @@
 #include "ComparisonEngine.h"
+#include "OrderMaker.h"
 
 // returns a -1, 0, or 1 depending upon whether left is less then, equal to, or
 // greater than right, depending upon the OrderMaker
@@ -9,6 +10,9 @@ int ComparisonEngine ::Compare(Record *left, Record *right,
 
   char *left_bits = left->GetBits();
   char *right_bits = right->GetBits();
+
+  // std::cout << "NUM ATTS: " << orderUs->numAtts << std::endl;
+  // std::cout << "WHICH ATTS: " << orderUs->whichAtts[0] << std::endl;
 
   for (int i = 0; i < orderUs->numAtts; i++) {
     val1 = left_bits + ((int *)left_bits)[orderUs->whichAtts[i] + 1];
@@ -27,6 +31,9 @@ int ComparisonEngine ::Compare(Record *left, Record *right,
       // cast the two bit strings to ints
       val1Int = *((int *)val1);
       val2Int = *((int *)val2);
+
+      // std::cout << "Val 1: " << val1Int << std::endl;
+      // std::cout << "Val 2: " << val2Int << std::endl;
 
       // and do the comparison
       if (val1Int < val2Int)
@@ -191,6 +198,93 @@ int ComparisonEngine ::Compare(Record *left, Record *right, Record *literal,
   return 1;
 }
 
+int ComparisonEngine ::Compare(Record *left, Record *literal, CNF *comp,
+                               OrderMaker *query) {
+  char *left_bits = left->GetBits();
+  char *lit_bits = literal->GetBits();
+
+  for (int i = 0; i < query->numAtts; i++) {
+
+    for (int j = 0; j < comp->numAnds; j++) {
+      if (comp->orLens[j] == 1 && comp->orList[j][0].op == Equals) {
+        Comparison &comparison = comp->orList[j][0];
+        char *val1, *val2;
+
+        if (comparison.operand1 == Left &&
+            comparison.whichAtt1 == query->whichAtts[i]) {
+          val1 = left_bits + ((int *)left_bits)[comparison.whichAtt1 + 1];
+          val2 = lit_bits + ((int *)lit_bits)[comparison.whichAtt2 + 1];
+          int res = helperComp(val1, val2, &comparison);
+          if (res != 0) {
+            return res;
+          }
+
+          break;
+        }
+
+        if (comparison.operand2 == Left &&
+            comparison.whichAtt2 == query->whichAtts[i]) {
+
+          val1 = left_bits + ((int *)left_bits)[comparison.whichAtt2 + 1];
+          val2 = lit_bits + ((int *)lit_bits)[comparison.whichAtt1 + 1];
+
+          int res = helperComp(val2, val1, &comparison);
+          if (res != 0) {
+            return res;
+          }
+
+          break;
+        }
+      }
+
+      if (j == comp->numAnds - 1) {
+        std::cout << "THIS SHOULD NEVER HAPPEN!" << std::endl;
+        exit(1);
+      }
+    }
+  }
+
+  return 0;
+}
+
+int ComparisonEngine::helperComp(char *val1, char *val2, Comparison *c) {
+  int val1Int, val2Int, tempResult;
+  double val1Double, val2Double;
+
+  // now check the type and the comparison operation
+  switch (c->attType) {
+
+  // first case: we are dealing with integers
+  case Int:
+
+    if (val1Int < val2Int) {
+      return -1;
+    } else {
+      return (val1Int < val2Int);
+    }
+    break;
+
+  // second case: dealing with doubles
+  case Double:
+    val1Double = *((double *)val1);
+    val2Double = *((double *)val2);
+
+    if (val1Double < val2Double) {
+      return -1;
+    } else {
+      return (val1Double < val2Double);
+    }
+    break;
+
+  // final case: dealing with strings
+  default:
+
+    // so check the operation type in order to actually do the comparison
+    return strcmp(val1, val2);
+    break;
+  }
+}
+
 // This is an internal function used by the comparison engine
 int ComparisonEngine ::Run(Record *left, Record *literal, Comparison *c) {
 
@@ -201,6 +295,7 @@ int ComparisonEngine ::Run(Record *left, Record *literal, Comparison *c) {
 
   // first get a pointer to the first value to compare
   if (c->operand1 == Left) {
+    // std::cout << "Which atts attribute: " << c->whichAtt1 << std::endl;
     val1 = left_bits + ((int *)left_bits)[c->whichAtt1 + 1];
   } else {
     val1 = lit_bits + ((int *)lit_bits)[c->whichAtt1 + 1];
@@ -210,6 +305,7 @@ int ComparisonEngine ::Run(Record *left, Record *literal, Comparison *c) {
   if (c->operand2 == Left) {
     val2 = left_bits + ((int *)left_bits)[c->whichAtt2 + 1];
   } else {
+    // std::cout << "WHICHATTS RUN: " << c->whichAtt2 << std::endl;
     val2 = lit_bits + ((int *)lit_bits)[c->whichAtt2 + 1];
   }
 
@@ -224,6 +320,9 @@ int ComparisonEngine ::Run(Record *left, Record *literal, Comparison *c) {
 
     val1Int = *((int *)val1);
     val2Int = *((int *)val2);
+
+    // std::cout << "Val 1 Run: " << val1Int << std::endl;
+    // std::cout << "Val 2 Run: " << val2Int << std::endl;
 
     // and check the operation type in order to actually do the comparison
     switch (c->op) {
