@@ -3,6 +3,7 @@
 *.out
 vgcore*
 *.bin
+*.bin.meta
 main
 *.tbl
-
+*.tab.*

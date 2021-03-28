@@ -1,7 +1,7 @@
 #include "DBFile.h"
 #include <fstream>
 
-DBFile::DBFile() : isOpen(false), db(nullptr){};
+DBFile::DBFile() : isOpen(false), db(nullptr) {}
 
 DBFile::~DBFile() { delete db; }
 

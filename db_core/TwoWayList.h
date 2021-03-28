@@ -210,9 +210,13 @@ public:
 
   // operations to move the the start of end of a list
   void MoveToStart() {
-    list->current = list->first;
-    list->rightSize += list->leftSize;
-    list->leftSize = 0;
+    if (list != nullptr) {
+      list->current = list->first;
+      list->rightSize += list->leftSize;
+      list->leftSize = 0;
+    } else {
+      std::cout << "List is null uh oh" << std::endl;
+    }
   }
 
   void MoveToFinish() {

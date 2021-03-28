@@ -1,4 +1,5 @@
 #include "../test.h"
+#include <unordered_map>
 
 using namespace std;
 
@@ -66,6 +67,10 @@ void test3() {
 }
 
 int main() {
+  std::unordered_map<int, std::string> choiceToRelName = {
+      {1, "nation"},   {2, "region"},   {3, "customer"}, {4, "part"},
+      {5, "partsupp"}, {6, "supplier"}, {7, "orders"},   {8, "lineitem"}};
+
   DBTest testProgram;
 
   void (*test)();
@@ -95,7 +100,15 @@ int main() {
     cin >> findx;
   }
 
-  DBTest::rel = testProgram.relations[findx - 1];
+  auto itr = testProgram.relations.find(choiceToRelName[findx]);
+  if (itr != testProgram.relations.end()) {
+    DBTest::rel = itr->second;
+  } else {
+    std::cout << "Failed to find relation with name: " << choiceToRelName[findx]
+              << std::endl;
+    exit(1);
+  }
+  
   test = test_ptr[tindx - 1];
 
   test();

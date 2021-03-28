@@ -71,7 +71,6 @@ int Pipe ::Remove(Record *removeMe) {
   // next, see if there is anything in the pipeline; if
   // there is, then do the removal
   if (lastSlot != firstSlot) {
-
     removeMe->Consume(&buffered[firstSlot % totSpace]);
 
     // if there is not, then we need to wait until the producer
@@ -81,7 +80,6 @@ int Pipe ::Remove(Record *removeMe) {
     // the pipeline is empty so we first see if this
     // is because it was turned off
     if (done) {
-
       pthread_mutex_unlock(&pipeMutex);
       return 0;
     }

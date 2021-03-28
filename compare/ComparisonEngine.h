@@ -16,7 +16,12 @@ class ComparisonEngine {
 private:
   int Run(Record *left, Record *literal, Comparison *c);
   int Run(Record *left, Record *right, Record *literal, Comparison *c);
-  int helperComp(char *val1, char *val2, Comparison *c);
+
+  // Used by the query + cnf Compare function to check for equality of two
+  // values the values can be an int, double or string.
+  // returns -1 or 0 or 1.
+  // -1 if val1 < val2, 0 if val1 == val2, 1 if val1 > val2
+  int CheckEquality(char *val1, char *val2, Comparison *c);
 
 public:
   // this version of Compare is for sorting.  The OrderMaker struct
@@ -44,7 +49,9 @@ public:
   // like the last one, but for unary operations
   int Compare(Record *left, Record *literal, CNF *myComparison);
 
-  int Compare(Record *left, Record *literal, CNF *comp, OrderMaker *query);
+  // this comparison uses the cnf and query to compare left to the literal.
+  // returns -1, 0 or 1 by using the CheckEquality helper function
+  int Compare(Record *left, Record *literal, CNF *cnf, OrderMaker *query);
 };
 
 #endif

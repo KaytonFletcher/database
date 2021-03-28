@@ -21,6 +21,7 @@ struct RunInfo {
       : numPagesLeft(numPages), currIndex(startingIndex) {}
 };
 class BigQ {
+  static inline int numSorters = 0;
   Pipe &in;
   Pipe &out;
   OrderMaker &sortorder;

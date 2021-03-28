@@ -29,8 +29,8 @@ private:
 public:
   Record();
   ~Record();
-  Record& operator=(const Record& other);
-  Record(const Record& other);
+  Record &operator=(const Record &other);
+  Record(const Record &other);
 
   void CopyBits(char *bits, int b_len);
   char *GetBits();
@@ -43,6 +43,8 @@ public:
   // expensive (requiring a bit-by-bit copy) than Consume, which is
   // only a pointer operation
   void Copy(Record *copyMe);
+
+  int ComposeRecord(Schema *mySchema, const char *src);
 
   // reads the next record from a pointer to a text file; also requires
   // that the schema be given; returns a 0 if there is no data left or
@@ -64,6 +66,10 @@ public:
   // prints the contents of the record; this requires
   // that the schema also be given so that the record can be interpreted
   void Print(Schema *mySchema);
+
+  void WriteOut(Schema* schema, FILE* file);
+
+  void ConstructLiteral(int intResult, double doubleResult, bool isInt);
 };
 
 #endif

@@ -69,8 +69,9 @@ void BigQ::readAndSort() {
   int numPagesinRun = 0;
   int totalPages = 0;
   Record record;
-  char fName[13] = "sortfile.bin";
-  file.Open(0, fName);
+  char fName[14];
+  sprintf(fName, "%s%d%s", "sortfile", ++BigQ::numSorters, ".bin");
+  this->file.Open(0, fName);
 
   Page *pages = new Page[this->runlen];
   std::vector<RunInfo> runInfo;
@@ -191,6 +192,7 @@ void BigQ::readAndSort() {
   delete[] pages;
 
   merge(runInfo);
+  remove(fName);
 }
 
 BigQ ::BigQ(Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen)

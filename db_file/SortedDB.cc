@@ -135,11 +135,7 @@ int SortedDB::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
 
   // do binary search
   if (query.numAtts > 0) {
-    std::cout << "Doing binary search" << std::endl;
-
     if (binarySearch(fetchme, literal, cnf)) {
-
-      std::cout << "Binary search returned succesful" << std::endl;
 
       // sanity check
       if (comp.Compare(&fetchme, &literal, &cnf, &query) != 0) {

@@ -11,9 +11,6 @@ int ComparisonEngine ::Compare(Record *left, Record *right,
   char *left_bits = left->GetBits();
   char *right_bits = right->GetBits();
 
-  // std::cout << "NUM ATTS: " << orderUs->numAtts << std::endl;
-  // std::cout << "WHICH ATTS: " << orderUs->whichAtts[0] << std::endl;
-
   for (int i = 0; i < orderUs->numAtts; i++) {
     val1 = left_bits + ((int *)left_bits)[orderUs->whichAtts[i] + 1];
     val2 = right_bits + ((int *)right_bits)[orderUs->whichAtts[i] + 1];
@@ -31,9 +28,6 @@ int ComparisonEngine ::Compare(Record *left, Record *right,
       // cast the two bit strings to ints
       val1Int = *((int *)val1);
       val2Int = *((int *)val2);
-
-      // std::cout << "Val 1: " << val1Int << std::endl;
-      // std::cout << "Val 2: " << val2Int << std::endl;
 
       // and do the comparison
       if (val1Int < val2Int)
@@ -198,23 +192,26 @@ int ComparisonEngine ::Compare(Record *left, Record *right, Record *literal,
   return 1;
 }
 
-int ComparisonEngine ::Compare(Record *left, Record *literal, CNF *comp,
+int ComparisonEngine ::Compare(Record *left, Record *literal, CNF *cnf,
                                OrderMaker *query) {
   char *left_bits = left->GetBits();
   char *lit_bits = literal->GetBits();
 
   for (int i = 0; i < query->numAtts; i++) {
 
-    for (int j = 0; j < comp->numAnds; j++) {
-      if (comp->orLens[j] == 1 && comp->orList[j][0].op == Equals) {
-        Comparison &comparison = comp->orList[j][0];
+    for (int j = 0; j < cnf->numAnds; j++) {
+
+      // we know based on how the "query" is built in CNF::BuildQuery,
+      // that only "single Or" equality (Equals) comparisons will be queried
+      if (cnf->orLens[j] == 1 && cnf->orList[j][0].op == Equals) {
+        Comparison &comparison = cnf->orList[j][0];
         char *val1, *val2;
 
         if (comparison.operand1 == Left &&
             comparison.whichAtt1 == query->whichAtts[i]) {
           val1 = left_bits + ((int *)left_bits)[comparison.whichAtt1 + 1];
           val2 = lit_bits + ((int *)lit_bits)[comparison.whichAtt2 + 1];
-          int res = helperComp(val1, val2, &comparison);
+          int res = this->CheckEquality(val1, val2, &comparison);
           if (res != 0) {
             return res;
           }
@@ -228,7 +225,7 @@ int ComparisonEngine ::Compare(Record *left, Record *literal, CNF *comp,
           val1 = left_bits + ((int *)left_bits)[comparison.whichAtt2 + 1];
           val2 = lit_bits + ((int *)lit_bits)[comparison.whichAtt1 + 1];
 
-          int res = helperComp(val2, val1, &comparison);
+          int res = this->CheckEquality(val2, val1, &comparison);
           if (res != 0) {
             return res;
           }
@@ -237,8 +234,9 @@ int ComparisonEngine ::Compare(Record *left, Record *literal, CNF *comp,
         }
       }
 
-      if (j == comp->numAnds - 1) {
-        std::cout << "THIS SHOULD NEVER HAPPEN!" << std::endl;
+      if (j == cnf->numAnds - 1) {
+        std::cout << "Error: Reached end of CNF without finding query attribute"
+                  << std::endl;
         exit(1);
       }
     }
@@ -247,8 +245,8 @@ int ComparisonEngine ::Compare(Record *left, Record *literal, CNF *comp,
   return 0;
 }
 
-int ComparisonEngine::helperComp(char *val1, char *val2, Comparison *c) {
-  int val1Int, val2Int, tempResult;
+int ComparisonEngine::CheckEquality(char *val1, char *val2, Comparison *c) {
+  int val1Int, val2Int;
   double val1Double, val2Double;
 
   // now check the type and the comparison operation
@@ -256,6 +254,8 @@ int ComparisonEngine::helperComp(char *val1, char *val2, Comparison *c) {
 
   // first case: we are dealing with integers
   case Int:
+    val1Int = *((int *)val1);
+    val2Int = *((int *)val2);
 
     if (val1Int < val2Int) {
       return -1;

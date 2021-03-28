@@ -13,32 +13,23 @@ void CNF::BuildQuery(OrderMaker &query, OrderMaker &sortOrder) {
       // and verifies that it is an equality check
       if (orLens[j] == 1 && orList[j][0].op == Equals) {
 
-        // if ((orList[j][0].whichAtt1 == sortOrder.whichAtts[i] &&
-        //      orList[j][0].operand2 == Literal)) {
-
-        //   query.whichAtts[query.numAtts] = orList[j][0].whichAtt1;
-        //   query.whichTypes[query.numAtts] = sortOrder.whichTypes[i];
-        //   query.numAtts++;
-        // }
-
-        // if (orList[j][0].whichAtt2 == sortOrder.whichAtts[i] &&
-        //            orList[j][0].operand1 == Literal) {
-
-        //   query.whichAtts[query.numAtts] = orList[j][0].whichAtt2;
-        //   query.whichTypes[query.numAtts] = sortOrder.whichTypes[i];
-        //   query.numAtts++;
-        // }
+        // if there is an attribute in the CNF that is not in the sortorder
+        // we must immediately stop
         if (orList[j][0].whichAtt1 != sortOrder.whichAtts[i] &&
             orList[j][0].whichAtt2 != sortOrder.whichAtts[i]) {
           return;
         }
 
+        // Must be an equality between an attribute and a literal
+        // to be queriable
         if (orList[j][0].operand2 == Literal ||
             orList[j][0].operand1 == Literal) {
           query.whichAtts[query.numAtts] = sortOrder.whichAtts[i];
           query.whichTypes[query.numAtts] = sortOrder.whichTypes[i];
           query.numAtts++;
+
           // if we make it through all subexpressions and don't find
+          // an attribute, we return
         } else if (j == numAnds - 1) {
           return;
         }
@@ -63,21 +54,17 @@ int CNF ::GetSortOrders(OrderMaker &left, OrderMaker &right) {
     // if we don't have a disjunction of length one, then it
     // can't be acceptable for use with a sort ordering
     if (orLens[i] != 1) {
-      // std::cout << "Or lens != 1: " << orLens[i] << std::endl;
       continue;
     }
 
     // made it this far, so first verify that it is an equality check
     if (orList[i][0].op != Equals) {
-      // std::cout << "Not an equality check!: " << orList[i][0].op <<
-      // std::endl;
       continue;
     }
 
     // now verify that it operates over atts from both tables
     if (!((orList[i][0].operand1 == Left && orList[i][0].operand2 == Right) ||
           (orList[i][0].operand2 == Left && orList[i][0].operand1 == Right))) {
-
       continue;
     }
 
@@ -124,14 +111,11 @@ int CNF ::GetSortOrders(OrderMaker &order_maker) {
     // if we don't have a disjunction of length one, then it
     // can't be acceptable for use with a sort ordering
     if (orLens[i] != 1) {
-      // std::cout << "Or lens != 1: " << orLens[i] << std::endl;
       continue;
     }
 
     // made it this far, so first verify that it is an equality check
     if (orList[i][0].op != Equals) {
-      // std::cout << "Not an equality check!: " << orList[i][0].op <<
-      // std::endl;
       continue;
     }
 
@@ -177,8 +161,6 @@ void CNF ::Print() {
 // record and its schema
 void AddLitToFile(int &numFieldsInLiteral, FILE *outRecFile,
                   FILE *outSchemaFile, char *value, Type myType) {
-
-  std::cout << "Num fields in literal: " << numFieldsInLiteral << std::endl;
 
   // first write out the new record field
   fprintf(outRecFile, "%s|", value);
@@ -460,8 +442,6 @@ void CNF ::GrowFromParseTree(struct AndList *parseTree, Schema *mySchema,
 
         // see if we can find this attribute in the schema
         if (mySchema->Find(myOr->left->left->value) != -1) {
-          std::cout << "Found attribute with index: "
-                    << mySchema->Find(myOr->left->left->value) << std::endl;
           cnf.orList[whichAnd][whichOr].operand1 = Left;
           cnf.orList[whichAnd][whichOr].whichAtt1 =
               mySchema->Find(myOr->left->left->value);
@@ -600,13 +580,11 @@ void CNF ::GrowFromParseTree(struct AndList *parseTree, Schema *mySchema,
   Schema outSchema("hkljdfgkSDFSDF", "tempSchema");
 
   // and get the record
-  if (!literal.SuckNextRecord(&outSchema, outRecFile)) {
-    std::cout << "THIS IS REALLY NOT GOOD" << std::endl;
-  }
+  literal.SuckNextRecord(&outSchema, outRecFile);
 
   // close the record file
   fclose(outRecFile);
 
-  // remove("sdafdsfFFDSDA");
-  // remove("hkljdfgkSDFSDF");
+  remove("sdafdsfFFDSDA");
+  remove("hkljdfgkSDFSDF");
 }

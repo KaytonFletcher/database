@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.7.3.  */
+/* A Bison parser, made by GNU Bison 3.7.6.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -45,11 +45,11 @@
    define necessary library symbols; they are noted "INFRINGES ON
    USER NAME SPACE" below.  */
 
-/* Identify Bison output.  */
-#define YYBISON 1
+/* Identify Bison output, and Bison version.  */
+#define YYBISON 30706
 
-/* Bison version.  */
-#define YYBISON_VERSION "3.7.3"
+/* Bison version string.  */
+#define YYBISON_VERSION "3.7.6"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -138,6 +138,7 @@ extern int yydebug;
   typedef enum yytokentype yytoken_kind_t;
 #endif
 /* Token kinds.  */
+#define YYEMPTY -2
 #define YYEOF 0
 #define YYerror 256
 #define YYUNDEF 257
@@ -160,7 +161,7 @@ union YYSTYPE
   	struct AndList *myAndList;
 	char *actualChars;
 
-#line 164 "y.tab.c"
+#line 165 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -239,6 +240,18 @@ typedef __INT_LEAST16_TYPE__ yytype_int16;
 typedef int_least16_t yytype_int16;
 #else
 typedef short yytype_int16;
+#endif
+
+/* Work around bug in HP-UX 11.23, which defines these macros
+   incorrectly for preprocessor constants.  This workaround can likely
+   be removed in 2023, as HPE has promised support for HP-UX 11.23
+   (aka HP-UX 11i v2) only through the end of 2022; see Table 2 of
+   <https://h20195.www2.hpe.com/V2/getpdf.aspx/4AA4-7673ENW.pdf>.  */
+#ifdef __hpux
+# undef UINT_LEAST8_MAX
+# undef UINT_LEAST16_MAX
+# define UINT_LEAST8_MAX 255
+# define UINT_LEAST16_MAX 65535
 #endif
 
 #if defined __UINT_LEAST8_MAX__ && __UINT_LEAST8_MAX__ <= __INT_MAX__
@@ -338,9 +351,9 @@ typedef int yy_state_fast_t;
 
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
-# define YYUSE(E) ((void) (E))
+# define YY_USE(E) ((void) (E))
 #else
-# define YYUSE(E) /* empty */
+# define YY_USE(E) /* empty */
 #endif
 
 #if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
@@ -643,7 +656,7 @@ static const yytype_int8 yypgoto[] =
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     2,     7,     8,    16,     9
+       0,     2,     7,     8,    16,     9
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -760,7 +773,7 @@ yy_symbol_value_print (FILE *yyo,
                        yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
   FILE *yyoutput = yyo;
-  YYUSE (yyoutput);
+  YY_USE (yyoutput);
   if (!yyvaluep)
     return;
 # ifdef YYPRINT
@@ -768,7 +781,7 @@ yy_symbol_value_print (FILE *yyo,
     YYPRINT (yyo, yytoknum[yykind], *yyvaluep);
 # endif
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yykind);
+  YY_USE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -882,13 +895,13 @@ static void
 yydestruct (const char *yymsg,
             yysymbol_kind_t yykind, YYSTYPE *yyvaluep)
 {
-  YYUSE (yyvaluep);
+  YY_USE (yyvaluep);
   if (!yymsg)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
 
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yykind);
+  YY_USE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -1163,7 +1176,7 @@ yyreduce:
 	(yyval.myAndList)->rightAnd = (yyvsp[0].myAndList);
 
 }
-#line 1167 "y.tab.c"
+#line 1180 "y.tab.c"
     break;
 
   case 3: /* AndList: '(' OrList ')'  */
@@ -1175,7 +1188,7 @@ yyreduce:
 	(yyval.myAndList)->left = (yyvsp[-1].myOrList);
 	(yyval.myAndList)->rightAnd = NULL;
 }
-#line 1179 "y.tab.c"
+#line 1192 "y.tab.c"
     break;
 
   case 4: /* OrList: Condition OR OrList  */
@@ -1186,7 +1199,7 @@ yyreduce:
 	(yyval.myOrList)->left = (yyvsp[-2].myComparison);
 	(yyval.myOrList)->rightOr = (yyvsp[0].myOrList);
 }
-#line 1190 "y.tab.c"
+#line 1203 "y.tab.c"
     break;
 
   case 5: /* OrList: Condition  */
@@ -1197,7 +1210,7 @@ yyreduce:
 	(yyval.myOrList)->left = (yyvsp[0].myComparison);
 	(yyval.myOrList)->rightOr = NULL;
 }
-#line 1201 "y.tab.c"
+#line 1214 "y.tab.c"
     break;
 
   case 6: /* Condition: Literal Op Literal  */
@@ -1208,7 +1221,7 @@ yyreduce:
 	(yyval.myComparison)->left = (yyvsp[-2].myOperand);
 	(yyval.myComparison)->right = (yyvsp[0].myOperand);
 }
-#line 1212 "y.tab.c"
+#line 1225 "y.tab.c"
     break;
 
   case 7: /* Condition: Literal  */
@@ -1219,7 +1232,7 @@ yyreduce:
 	(yyval.myComparison)->left = (yyvsp[0].myOperand);
 	(yyval.myComparison)->right = (yyvsp[0].myOperand);
 }
-#line 1223 "y.tab.c"
+#line 1236 "y.tab.c"
     break;
 
   case 8: /* Op: '<'  */
@@ -1229,7 +1242,7 @@ yyreduce:
 	(yyval.myComparison) = (struct ComparisonOp *) malloc (sizeof (struct ComparisonOp));
 	(yyval.myComparison)->code = LESS_THAN;
 }
-#line 1233 "y.tab.c"
+#line 1246 "y.tab.c"
     break;
 
   case 9: /* Op: '>'  */
@@ -1239,7 +1252,7 @@ yyreduce:
 	(yyval.myComparison) = (struct ComparisonOp *) malloc (sizeof (struct ComparisonOp));
 	(yyval.myComparison)->code = GREATER_THAN;
 }
-#line 1243 "y.tab.c"
+#line 1256 "y.tab.c"
     break;
 
   case 10: /* Op: '='  */
@@ -1249,7 +1262,7 @@ yyreduce:
 	(yyval.myComparison) = (struct ComparisonOp *) malloc (sizeof (struct ComparisonOp));
 	(yyval.myComparison)->code = EQUALS;
 }
-#line 1253 "y.tab.c"
+#line 1266 "y.tab.c"
     break;
 
   case 11: /* Literal: String  */
@@ -1260,7 +1273,7 @@ yyreduce:
 	(yyval.myOperand)->code = STRING;
 	(yyval.myOperand)->value = (yyvsp[0].actualChars);
 }
-#line 1264 "y.tab.c"
+#line 1277 "y.tab.c"
     break;
 
   case 12: /* Literal: Float  */
@@ -1271,7 +1284,7 @@ yyreduce:
 	(yyval.myOperand)->code = DOUBLE;
 	(yyval.myOperand)->value = (yyvsp[0].actualChars);
 }
-#line 1275 "y.tab.c"
+#line 1288 "y.tab.c"
     break;
 
   case 13: /* Literal: Int  */
@@ -1282,7 +1295,7 @@ yyreduce:
 	(yyval.myOperand)->code = INT;
 	(yyval.myOperand)->value = (yyvsp[0].actualChars);
 }
-#line 1286 "y.tab.c"
+#line 1299 "y.tab.c"
     break;
 
   case 14: /* Literal: Name  */
@@ -1293,11 +1306,11 @@ yyreduce:
 	(yyval.myOperand)->code = NAME;
 	(yyval.myOperand)->value = (yyvsp[0].actualChars);
 }
-#line 1297 "y.tab.c"
+#line 1310 "y.tab.c"
     break;
 
 
-#line 1301 "y.tab.c"
+#line 1314 "y.tab.c"
 
       default: break;
     }
