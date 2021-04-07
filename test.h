@@ -11,7 +11,7 @@
 #include "db_core/Function.h"
 #include "db_core/Pipe.h"
 #include "db_core/Record.h"
-#include "db_core/Relation.h"
+#include "optionals/Relation.h"
 
 #include "db_file/DBFile.h"
 

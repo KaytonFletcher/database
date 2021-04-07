@@ -29,6 +29,10 @@ To compile `gtests.out`, the program that runs the unit tests I wrote, run the c
 ```
 make gtests.out
 ```
+To compile `a2test.out`, the program that enables the creation of heap and sorted databse *.bin files
+```
+make a2test.out
+```
 
 No `main.cc` was submitted with this project, other than the one in the `gtests` folder.
 
@@ -39,7 +43,9 @@ Running the programs is very straight forward. Treat each as an executable.
 
 Neither executable requires user input. However, `test.out` must have a command line argument for which test you wish to run. `gtests.out` does need a valid location for the HeapDB for the `nation` and `region` relations.
 
-The unit tests created with gtest are all located in `gtests/main.cc`. The gtests created test the operations created.
+The unit tests created with gtest are all located in `gtests/main.cc`. The gtests created test the relational operations created.
+
+To run the program that enables database creation, simply run `./a2test.out`. From there you may choose option 1 to create a sorted database or option 2 to create a heap database. For either, you must specify the relation you wish to create. Both use the locations specified in `test.cat` to retrieve and write files. For sorted files, you must also specify the run length and sorting order desired. 
 
 ## ./runTestCases.sh Output
 ![Import File](./screenshots/output1.png)

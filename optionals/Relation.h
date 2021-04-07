@@ -6,10 +6,10 @@
 #include <vector>
 
 #include "../compare/CNF.h"
+#include "../db_core/Function.h"
+#include "../db_core/Schema.h"
 #include "../db_file/DBFile.h"
 #include "../relational_ops/SelectFile.h"
-#include "Function.h"
-#include "Schema.h"
 
 extern struct AndList *final;
 extern struct FuncOperator *finalfunc;
@@ -71,7 +71,7 @@ public:
       exit(1);
     }
     cnf.GrowFromParseTree(final, schema(),
-                               literal); // constructs CNF predicate
+                          literal); // constructs CNF predicate
     close_lexical_parser();
   }
 

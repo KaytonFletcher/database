@@ -1,342 +1,227 @@
-#include "../relational_ops/GroupBy.h"
-#include "../relational_ops/WriteOut.h"
-#include "../test.h"
+#include "../statistics/Statistics.h"
+
 #include "gtest/gtest.h"
 #include <cstdlib>
 
-Attribute IA = {strdup("int"), Int};
-Attribute SA = {strdup("string"), String};
-Attribute DA = {strdup("double"), Double};
+// extern "C" struct YY_BUFFER_STATE *yy_scan_string(const char *);
+// extern "C" int yyparse(void);
+// extern struct AndList *final;
 
-void get_cnf(char *input, Schema *left, Schema *right, CNF &cnf_pred,
-             Record &literal) {
-  init_lexical_parser(input);
-  if (yyparse() != 0) {
-    std::cout << " Error: can't parse your CNF " << input << std::endl;
-    exit(1);
-  }
-  cnf_pred.GrowFromParseTree(final, left, right,
-                             literal); // constructs CNF predicate
-  close_lexical_parser();
+TEST(StatisticsDeathTest, NoRelations) {
+  Statistics stats;
+  ASSERT_DEATH(stats.Estimate(nullptr, nullptr, 0),
+               "Number of relations to join must be greater than 0");
 }
 
-void get_cnf(char *input, Schema *left, Function &fn_pred) {
-  init_lexical_parser_func(input);
-  if (yyfuncparse() != 0) {
-    std::cout << " Error: can't parse your arithmetic expr. " << input
-              << std::endl;
-    exit(1);
-  }
-  fn_pred.GrowFromParseTree(finalfunc, *left); // constructs CNF predicate
-  close_lexical_parser_func();
+TEST(StatisticsDeathTest, SingleRelationDeath) {
+  Statistics stats;
+
+  char *testRelName = strdup("test_rel");
+  stats.AddRel(testRelName, 10);
+
+  char *badRelName[1] = {strdup("not_test_rel")};
+  ASSERT_DEATH(
+      stats.Estimate(nullptr, badRelName, 1),
+      "Relation specified in list to join does not exist: can't estimate");
+
+  free(testRelName);
+  free(badRelName[0]);
 }
 
-TEST(GroupByTest, SimpleGroupBy) {
-  DBTest testProgram;
-  Relation *rel = testProgram.relations.find("nation")->second;
-  rel->df.Open(rel->path());
+TEST(StatisticsTest, CrossProduct) {
+  Statistics stats;
+  char *testRelName = strdup("test_rel");
+  char *secondRelName = strdup("rel_to_cross");
+  char *relNames[2] = {testRelName, secondRelName};
+  stats.AddRel(testRelName, 42);
+  stats.AddRel(secondRelName, 500);
 
-  // used to select all tuples from nation.bin (25 in total)
-  char *selectAllCNF = strdup("(n_nationkey = n_nationkey)");
-  rel->get_cnf(selectAllCNF);
-  free(selectAllCNF);
+  ASSERT_EQ(21000, stats.Estimate(nullptr, relNames, 2));
 
-  rel->sf.Use_n_Pages(1);
-  rel->sf.Run(rel->df, rel->pipe, rel->cnf, rel->literal);
-  rel->sf.WaitUntilDone();
-
-  GroupBy groupBy;
-  groupBy.Use_n_Pages(1);
-
-  OrderMaker groupAtts;
-  groupAtts.numAtts = 1;
-  groupAtts.whichAtts[0] = 2;
-  groupAtts.whichTypes[0] = Int;
-
-  Pipe outPipe(100);
-  Function calc;
-
-  // we group by regionkey ([0 - 4], 5 in total)
-  // we also sum by regionkey. There is 5 of each so
-  // the tuples will be
-  // (0, 0), (5*1, 1), (5*2, 2), (5*3, 3), (5*4, 4)
-  char *str_sum = strdup("(n_regionkey)");
-  rel->get_cnf(str_sum, calc);
-  free(str_sum);
-
-  groupBy.Run(rel->pipe, outPipe, groupAtts, 4, calc);
-  groupBy.WaitUntilDone();
-
-  int count = 0;
-  Record buffer;
-
-  Attribute shared = {strdup("n_regionkey"), Int};
-  Attribute *attrs[]{&IA, &shared};
-  Schema schema("nation.bin", 2, attrs);
-
-  while (outPipe.Remove(&buffer)) {
-    buffer.Print(&schema);
-    count++;
-  }
-
-  ASSERT_EQ(count, 5);
-  testProgram.cleanup();
+  free(testRelName);
+  free(secondRelName);
 }
 
-TEST(GroupByTest, GroupByWithJoin) {
-  DBTest testProgram;
-  Relation *leftRel = testProgram.relations.find("region")->second;
-  leftRel->df.Open(leftRel->path());
+TEST(StatisticsTest, ReadAndWrite) {
+  Statistics s;
+  char *relName[] = {strdup("s"), strdup("p"), strdup("useless")};
 
-  // used to select all tuples from region.bin (5 in total)
-  char *selectAllCNF = strdup("(r_regionkey = r_regionkey)");
-  leftRel->get_cnf(selectAllCNF);
-  free(selectAllCNF);
+  char *supKey = strdup("s_suppkey");
+  char *supForeignKey = strdup("ps_suppkey");
+  s.AddRel(relName[0], 10);
+  s.AddAtt(relName[0], supKey, 10);
 
-  leftRel->sf.Use_n_Pages(1);
-  leftRel->sf.Run(leftRel->df, leftRel->pipe, leftRel->cnf, leftRel->literal);
+  s.AddRel(relName[1], 800);
+  s.AddAtt(relName[1], supForeignKey, 10);
 
-  Relation *rightRel = testProgram.relations.find("nation")->second;
-  rightRel->df.Open(rightRel->path());
+  s.AddRel(relName[2], 2);
+  s.AddAtt(relName[2], supForeignKey, 10);
 
-  // used to select all tuples from nation.bin (25 in total)
-  char *selectAllCNFRight = strdup("(n_nationkey = n_nationkey)");
-  rightRel->get_cnf(selectAllCNFRight);
-  free(selectAllCNFRight);
+  ASSERT_EQ(s.NumAttributes(), 2);
+  ASSERT_EQ(s.NumRelations(), 3);
+  ASSERT_EQ(s.NumRelationsWithAttribute(supForeignKey), 2);
 
-  rightRel->sf.Use_n_Pages(1);
-  rightRel->sf.Run(rightRel->df, rightRel->pipe, rightRel->cnf,
-                   rightRel->literal);
+  char *fileName = strdup("mmasdnasdanfa");
 
-  CNF joinCNF;
-  Record joinLiteral;
-  char *joinPred = strdup("(r_regionkey = n_regionkey)");
-  get_cnf(joinPred, leftRel->schema(), rightRel->schema(), joinCNF,
-          joinLiteral);
-  free(joinPred);
+  s.Write(fileName);
 
-  Attribute nation_key = {strdup("n_nationkey"), Int};
+  Statistics newStats;
+  newStats.Read(fileName);
 
-  int outAtts = 7; // 3 from region, 4 from nation
-  Attribute *joinatt[] = {&IA, &SA, &SA, &nation_key, &SA, &IA, &SA};
-  Schema joinSchema("join_schema", outAtts, joinatt);
+  ASSERT_EQ(newStats.NumAttributes(), 2);
+  ASSERT_EQ(newStats.NumRelations(), 3);
+  ASSERT_EQ(newStats.NumRelationsWithAttribute(supForeignKey), 2);
 
-  Join simpleJoin;
-  Pipe joinOut(100);
-  simpleJoin.Use_n_Pages(1);
+  remove(fileName);
 
-  simpleJoin.Run(leftRel->pipe, rightRel->pipe, joinOut, joinCNF, joinLiteral,
-                 3, 4);
-
-  simpleJoin.WaitUntilDone();
-
-  OrderMaker groupAtts;
-  groupAtts.numAtts = 1;
-  groupAtts.whichAtts[0] = 5;
-  groupAtts.whichTypes[0] = Int;
-
-  GroupBy groupBy;
-  groupBy.Use_n_Pages(1);
-  Pipe groupOut(100);
-
-  Function groupByFunc;
-  char *str_sum = strdup("(n_nationkey)");
-  get_cnf(str_sum, &joinSchema, groupByFunc);
-  free(str_sum);
-
-  groupBy.Run(joinOut, groupOut, groupAtts, 7, groupByFunc);
-
-  groupBy.WaitUntilDone();
-  leftRel->sf.WaitUntilDone();
-  rightRel->sf.WaitUntilDone();
-
-  Attribute *groupAttrs[] = {&IA, &IA};
-  Schema groupSchema("groupSchema", 2, groupAttrs);
-  Record buffer;
-  int count = 0;
-  while (groupOut.Remove(&buffer)) {
-    buffer.Print(&groupSchema);
-    count++;
-  }
-
-  ASSERT_EQ(count, 5);
+  free(relName[0]);
+  free(relName[1]);
+  free(relName[2]);
+  free(fileName);
+  free(supKey);
+  free(supForeignKey);
 }
 
-TEST(DuplicateRemoval, SimpleDuplicateRemoval) {
-  DBTest testProgram;
-  Relation *rel = testProgram.relations.find("nation")->second;
-  rel->df.Open(rel->path());
+TEST(StatisticsTest, SimpleEquiJoin) {
+  Statistics s;
+  char *relName[] = {strdup("supplier"), strdup("partsupp")};
 
-  // used to select all tuples from nation.bin (25 in total)
-  char *selectAllCNF = strdup("(n_nationkey = n_nationkey)");
-  rel->get_cnf(selectAllCNF);
-  free(selectAllCNF);
+  char *supKey = strdup("s_suppkey");
+  char *supForeignKey = strdup("ps_suppkey");
+  s.AddRel(relName[0], 10000);
+  s.AddAtt(relName[0], supKey, 10000);
 
-  rel->sf.Use_n_Pages(1);
-  // getting the records from the nation DBFile twice!
-  rel->sf.Run(rel->df, rel->pipe, rel->cnf, rel->literal);
-  rel->sf.WaitUntilDone();
-  rel->sf.Run(rel->df, rel->pipe, rel->cnf, rel->literal);
-  rel->sf.WaitUntilDone();
+  s.AddRel(relName[1], 800000);
+  s.AddAtt(relName[1], supForeignKey, 10000);
 
-  int count = 0;
-  Record buffer;
-  Pipe tempPipe(100);
-  while (rel->pipe.Remove(&buffer)) {
-    count++;
-    tempPipe.Insert(&buffer);
-  }
-  tempPipe.ShutDown();
+  const char *cnf = "(s_suppkey = ps_suppkey)";
 
-  ASSERT_EQ(count, 50);
+  yy_scan_string(cnf);
+  yyparse();
 
-  DuplicateRemoval duplicateRemoval;
-  duplicateRemoval.Use_n_Pages(1);
+  ASSERT_EQ(800000, s.Estimate(final, relName, 2));
 
-  Pipe outPipe(100);
-  duplicateRemoval.Run(tempPipe, outPipe, *rel->schema());
-  duplicateRemoval.WaitUntilDone();
+  free(relName[0]);
+  free(relName[1]);
 
-  count = 0;
-  while (outPipe.Remove(&buffer)) {
-    count++;
-  }
-
-  ASSERT_EQ(count, 25);
-  testProgram.cleanup();
+  free(supKey);
+  free(supForeignKey);
 }
 
-TEST(Join, SimpleJoin) {
-  DBTest testProgram;
-  Relation *leftRel = testProgram.relations.find("region")->second;
-  leftRel->df.Open(leftRel->path());
+TEST(StatisticsTest, NameResolve) {
+  Statistics s;
+  char *relName[] = {strdup("s"), strdup("p")};
 
-  // used to select all tuples from region.bin (5 in total)
-  char *selectAllCNF = strdup("(r_regionkey = r_regionkey)");
-  leftRel->get_cnf(selectAllCNF);
-  free(selectAllCNF);
+  char *supKey = strdup("s_suppkey");
+  char *supForeignKey = strdup("ps_suppkey");
+  s.AddRel(relName[0], 10);
+  s.AddAtt(relName[0], supKey, 10);
 
-  leftRel->sf.Use_n_Pages(1);
-  leftRel->sf.Run(leftRel->df, leftRel->pipe, leftRel->cnf, leftRel->literal);
+  s.AddRel(relName[1], 800);
+  s.AddAtt(relName[1], supForeignKey, 10);
 
-  Relation *rightRel = testProgram.relations.find("nation")->second;
-  rightRel->df.Open(rightRel->path());
+  const char *cnf = "(s.s_suppkey = p.ps_suppkey)";
 
-  // used to select all tuples from nation.bin (25 in total)
-  char *selectAllCNFRight = strdup("(n_nationkey = n_nationkey)");
-  rightRel->get_cnf(selectAllCNFRight);
-  free(selectAllCNFRight);
+  yy_scan_string(cnf);
+  yyparse();
 
-  rightRel->sf.Use_n_Pages(1);
-  rightRel->sf.Run(rightRel->df, rightRel->pipe, rightRel->cnf,
-                   rightRel->literal);
+  ASSERT_EQ(800, s.Estimate(final, relName, 2));
 
-  CNF joinCNF;
-  Record joinLiteral;
-  char *joinPred = strdup("(r_regionkey = n_regionkey)");
-  get_cnf(joinPred, leftRel->schema(), rightRel->schema(), joinCNF,
-          joinLiteral);
-  free(joinPred);
+  free(relName[0]);
+  free(relName[1]);
 
-  int outAtts = 7; // 3 from region, 4 from nation
-  Attribute *joinatt[] = {&IA, &SA, &SA, &IA, &SA, &IA, &SA};
-  Schema joinSchema("join_schema", outAtts, joinatt);
-
-  Join simpleJoin;
-  Pipe outPipe(100);
-  simpleJoin.Use_n_Pages(1);
-
-  simpleJoin.Run(leftRel->pipe, rightRel->pipe, outPipe, joinCNF, joinLiteral,
-                 3, 4);
-
-  leftRel->sf.WaitUntilDone();
-  rightRel->sf.WaitUntilDone();
-  simpleJoin.WaitUntilDone();
-
-  Record buffer;
-  int count = 0;
-  while (outPipe.Remove(&buffer)) {
-    buffer.Print(&joinSchema);
-    count++;
-  }
-
-  ASSERT_EQ(count, 25);
-
-  testProgram.cleanup();
+  free(supKey);
+  free(supForeignKey);
 }
 
-TEST(Join, JoinWithSum) {
-  DBTest testProgram;
-  Relation *leftRel = testProgram.relations.find("region")->second;
-  leftRel->df.Open(leftRel->path());
+TEST(StatisticsTest, NameResolveWithMultiple) {
+  Statistics s;
+  char *relName[] = {strdup("s"), strdup("p"), strdup("useless")};
 
-  // used to select all tuples from region.bin (5 in total)
-  char *selectAllCNF = strdup("(r_regionkey = r_regionkey)");
-  leftRel->get_cnf(selectAllCNF);
-  free(selectAllCNF);
+  char *supKey = strdup("s_suppkey");
+  char *supForeignKey = strdup("ps_suppkey");
+  s.AddRel(relName[0], 10);
+  s.AddAtt(relName[0], supKey, 10);
 
-  leftRel->sf.Use_n_Pages(1);
-  leftRel->sf.Run(leftRel->df, leftRel->pipe, leftRel->cnf, leftRel->literal);
+  s.AddRel(relName[1], 800);
+  s.AddAtt(relName[1], supForeignKey, 10);
 
-  Relation *rightRel = testProgram.relations.find("nation")->second;
-  rightRel->df.Open(rightRel->path());
+  s.AddRel(relName[2], 2);
+  s.AddAtt(relName[2], supForeignKey, 10);
 
-  // used to select all tuples from nation.bin (25 in total)
-  char *selectAllCNFRight = strdup("(n_nationkey = n_nationkey)");
-  rightRel->get_cnf(selectAllCNFRight);
-  free(selectAllCNFRight);
+  const char *cnf = "(s.s_suppkey = p.ps_suppkey)";
 
-  rightRel->sf.Use_n_Pages(1);
-  rightRel->sf.Run(rightRel->df, rightRel->pipe, rightRel->cnf,
-                   rightRel->literal);
+  yy_scan_string(cnf);
+  yyparse();
 
-  Pipe joinOutPipe(100);
-  Join simpleJoin;
+  ASSERT_EQ(800, s.Estimate(final, relName, 2));
 
-  CNF joinCNF;
-  Record joinLiteral;
-  char *joinPred = strdup("(r_regionkey = n_regionkey)");
-  get_cnf(joinPred, leftRel->schema(), rightRel->schema(), joinCNF,
-          joinLiteral);
-  free(joinPred);
+  free(relName[0]);
+  free(relName[1]);
+  free(relName[2]);
 
-  Attribute nation_key = {strdup("n_nationkey"), Int};
+  free(supKey);
+  free(supForeignKey);
+}
 
-  int outAtts = 7; // 3 from region, 4 from nation
-  Attribute *joinatt[] = {&IA, &SA, &SA, &nation_key, &SA, &IA, &SA};
-  Schema joinSchema("join_schema", outAtts, joinatt);
+TEST(StatisticsTest, CopyRelation) {
+  Statistics s;
+  char *relName[] = {strdup("s"), strdup("p"), strdup("useless")};
 
-  simpleJoin.Use_n_Pages(1);
-  simpleJoin.Run(leftRel->pipe, rightRel->pipe, joinOutPipe, joinCNF,
-                 joinLiteral, 3, 4);
+  char *supKey = strdup("s_suppkey");
+  char *supForeignKey = strdup("ps_suppkey");
+  s.AddRel(relName[0], 10);
+  s.AddAtt(relName[0], supKey, 10);
 
-  Sum sumOnJoin;
-  sumOnJoin.Use_n_Pages(1);
+  s.AddRel(relName[1], 800);
+  s.AddAtt(relName[1], supForeignKey, 10);
 
-  Pipe sumOutPipe(100);
-  Function sumFunc;
+  s.AddRel(relName[2], 2);
+  s.AddAtt(relName[2], supForeignKey, 10);
 
-  char *str_sum = strdup("(n_nationkey)");
-  get_cnf(str_sum, &joinSchema, sumFunc);
-  free(str_sum);
+  ASSERT_EQ(s.NumAttributes(), 2);
+  ASSERT_EQ(s.NumRelations(), 3);
+  ASSERT_EQ(s.NumRelationsWithAttribute(supForeignKey), 2);
 
-  sumOnJoin.Run(joinOutPipe, sumOutPipe, sumFunc);
+  char *newRelName = strdup("newRel");
+  s.CopyRel(relName[1], newRelName);
 
-  simpleJoin.WaitUntilDone();
-  sumOnJoin.WaitUntilDone();
-  leftRel->sf.WaitUntilDone();
-  rightRel->sf.WaitUntilDone();
+  ASSERT_EQ(s.NumAttributes(), 2);
+  ASSERT_EQ(s.NumRelations(), 4);
+  ASSERT_EQ(s.NumRelationsWithAttribute(supForeignKey), 3);
 
-  Record buffer;
-  Attribute *sumAtts[] = {&IA};
-  Schema sumSchema("sumSchema", 1, sumAtts);
-  int count = 0;
-  while (sumOutPipe.Remove(&buffer)) {
-    count++;
-    buffer.Print(&sumSchema);
-  }
-  ASSERT_EQ(count, 1);
-  testProgram.cleanup();
+  free(relName[0]);
+  free(relName[1]);
+  free(relName[2]);
+  free(newRelName);
+  free(supKey);
+  free(supForeignKey);
+}
+
+// TEST(StatisticsDeathTest, SingleRelationSuccess) {
+
+//   Statistics stats;
+//   char *testRelName[1] = {strdup("test_rel")};
+
+//   stats.AddRel(testRelName[0], 10);
+
+//   EXPECT_EXIT(stats.Estimate(nullptr, testRelName, 1),
+//               testing::ExitedWithCode(0), "Success");
+// }
+
+TEST(StatisticsTest, AddRel) {
+  Statistics stats;
+  char *testRelName = strdup("test_rel");
+  stats.AddRel(testRelName, 10);
+
+  // doesn't error out, just updates numTuples
+  stats.AddRel(testRelName, 15);
+
+  char *testAttName = strdup("test_key");
+  stats.AddAtt(testRelName, testAttName, 15);
+
+  free(testRelName);
+  free(testAttName);
 }
 
 int main(int argc, char **argv) {

@@ -41,7 +41,6 @@ struct OrList {
   // this might be NULL if the right is a simple comparison
   struct OrList *rightOr;
 };
-
 struct AndList {
 
   // this is the disjunction to the left of the AND
