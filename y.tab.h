@@ -54,12 +54,20 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    OR = 258,                      /* OR  */
-    AND = 259,                     /* AND  */
-    Name = 260,                    /* Name  */
+    Name = 258,                    /* Name  */
+    Float = 259,                   /* Float  */
+    Int = 260,                     /* Int  */
     String = 261,                  /* String  */
-    Float = 262,                   /* Float  */
-    Int = 263                      /* Int  */
+    SELECT = 262,                  /* SELECT  */
+    GROUP = 263,                   /* GROUP  */
+    DISTINCT = 264,                /* DISTINCT  */
+    BY = 265,                      /* BY  */
+    FROM = 266,                    /* FROM  */
+    WHERE = 267,                   /* WHERE  */
+    SUM = 268,                     /* SUM  */
+    AS = 269,                      /* AS  */
+    AND = 270,                     /* AND  */
+    OR = 271                       /* OR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -68,26 +76,39 @@ extern int yydebug;
 #define YYEOF 0
 #define YYerror 256
 #define YYUNDEF 257
-#define OR 258
-#define AND 259
-#define Name 260
+#define Name 258
+#define Float 259
+#define Int 260
 #define String 261
-#define Float 262
-#define Int 263
+#define SELECT 262
+#define GROUP 263
+#define DISTINCT 264
+#define BY 265
+#define FROM 266
+#define WHERE 267
+#define SUM 268
+#define AS 269
+#define AND 270
+#define OR 271
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 20 "dependencies/Parser.y"
+#line 26 "dependencies/Parser.y"
 
- 	struct Operand *myOperand;
-	struct ComparisonOp *myComparison; 
-  	struct OrList *myOrList;
-  	struct AndList *myAndList;
+ 	struct FuncOperand *myOperand;
+	struct FuncOperator *myOperator; 
+	struct TableList *myTables;
+	struct ComparisonOp *myComparison;
+	struct Operand *myBoolOperand;
+	struct OrList *myOrList;
+	struct AndList *myAndList;
+	struct NameList *myNames;
 	char *actualChars;
+	char whichOne;
 
-#line 91 "y.tab.h"
+#line 112 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

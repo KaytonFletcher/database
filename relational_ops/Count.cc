@@ -18,7 +18,6 @@ void doWork(CountInfo *info) {
   ComparisonEngine ce;
   Pipe tempPipe(100);
   BigQ sorter(info->inPipe, tempPipe, info->groupAtts, info->runLength);
-
   Record buffer;
   Record recordToCompare;
 
@@ -42,8 +41,11 @@ void doWork(CountInfo *info) {
       numInGroup++;
     } else {
 
+      numInGroup++;
+
       insertGroup(*info, recordToCompare, numInGroup, toKeep);
       numInGroup = 0;
+
       // "buffer" becomes the start of the new group
       recordToCompare = buffer;
     }
@@ -60,8 +62,8 @@ void doWork(CountInfo *info) {
 
 void Count::Run(Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts,
                 int totalAtts) {
-  this->info =
-      new CountInfo{inPipe, outPipe, groupAtts, totalAtts, this->runLength};
+  this->info = new CountInfo{inPipe,    outPipe,         groupAtts,
+                             totalAtts, this->runLength};
   this->worker = std::thread(&doWork, this->info);
 }
 

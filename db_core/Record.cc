@@ -528,8 +528,15 @@ void Record::ConstructLiteral(int intResult, double doubleResult, bool isInt) {
       ((isInt) ? std::to_string(intResult) : std::to_string(doubleResult));
   data += '|';
 
-  Attribute attr = (isInt) ? Attribute{strdup("int"), Int}
-                           : Attribute{strdup("double"), Double};
+  Attribute intAttr;
+  intAttr.name = strdup("int");
+  intAttr.myType = Int;
+
+  Attribute doubleAttr;
+  doubleAttr.name = strdup("double");
+  doubleAttr.myType = Double;
+
+  Attribute &attr = (isInt) ? intAttr : doubleAttr;
   Attribute *attrList[] = {&attr};
   Schema schema("sumFile", 1, attrList);
   this->ComposeRecord(&schema, data.c_str());

@@ -92,7 +92,7 @@ void q0() {
   s.Apply(final, relName, 2);
 
   // test write and read
-  // s.Write(fileName);
+  s.Write(fileName);
 
   // reload the statistics object from file
   // Statistics s1;
@@ -124,7 +124,7 @@ void q1() {
 
   double result = s.Estimate(final, relName, 1);
   cout << "Your estimation Result  " << result;
-  cout << strdup("\n Correct Answer: 8.5732e+5");
+  cout << strdup("\n Correct Answer: 671758");
 
   s.Apply(final, relName, 1);
 
@@ -303,7 +303,7 @@ void q5() {
 
   double result = s.Estimate(final, relName, 3);
 
-  if (fabs(result - 400081) > 0.1)
+  if (fabs(result - 584911) > 0.1)
     cout << "error in estimating Q5\n";
 
   s.Apply(final, relName, 3);
@@ -355,6 +355,7 @@ void q7() {
 
   s.AddRel(relName[1], 6001215);
   s.AddAtt(relName[1], strdup("l_orderkey"), 1500000);
+  s.AddAtt(relName[1], strdup("l_receiptdate"), 1500000);
 
   const char *cnf =
       "(l_receiptdate >'1995-02-01' ) AND (l_orderkey = o_orderkey)";
@@ -471,7 +472,8 @@ void q10() {
   yyparse();
 
   double result = s.Estimate(final, relName, 4);
-  if (fabs(result - 2000405) > 0.1)
+
+  if (fabs(result - 4132980) > 2000)
     cout << "error in estimating Q10\n";
 
   s.Apply(final, relName, 4);
@@ -502,8 +504,7 @@ void q11() {
   yyparse();
 
   double result = s.Estimate(final, relName, 2);
-
-  if (fabs(result - 21432.9) > 0.5)
+  if (fabs(result - 19425.1) > 0.5)
     cout << "error in estimating Q11\n";
   s.Apply(final, relName, 2);
 

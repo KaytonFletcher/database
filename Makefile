@@ -12,11 +12,17 @@ tag = -n
 endif
 
 dev.out: y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o
-	$(CC) -o dev.out $(DEV_FLAGS) $(CORE_FILES) ./p4_part1/test.cc -lfl -lpthread
+	$(CC) -o dev.out $(DEV_FLAGS) $(CORE_FILES) ./p4_part2/main.cc -lfl -lpthread
 
 gtests.out: y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o
 	$(CC) -g -o gtests.out $(DEV_FLAGS) $(CORE_FILES) ./gtests/main.cc -lfl -lgtest -lpthread
 
+a4-1.out: y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o
+	$(CC) -o a4-1.out $(PROD_FLAGS) $(CORE_FILES) ./p4_part1/test.cc -lfl -lpthread
+
+a2test.out: y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o
+	$(CC) -o a2test.out $(PROD_FLAGS) $(CORE_FILES) ./a2test.cc -lfl -lpthread
+	
 test3.out: y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o
 	$(CC) -o test.out $(PROD_FLAGS) $(CORE_FILES) ./p3/test.cc -lfl -lpthread
 

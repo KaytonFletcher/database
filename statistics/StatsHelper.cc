@@ -1,8 +1,54 @@
 #include "StatsHelper.h"
 
+int Stats::GetNumDistinct(AttributeType &attr) {
+  switch (attr.index()) {
+  case 0:
+    return std::get_if<AttributeStat<int>>(&attr)->numDistinct;
+  case 1:
+    return std::get_if<AttributeStat<double>>(&attr)->numDistinct;
+  default:
+    return std::get_if<AttributeStat<std::string>>(&attr)->numDistinct;
+  }
+}
 
-void splitString(char *originalString, std::string &attrName,
-                 std::string &relName) {
+void Stats::UpdateNumDistinct(AttributeType &attr, int numDistinct) {
+
+  AttributeStat<int> *attrInt = std::get_if<AttributeStat<int>>(&attr);
+  if (attrInt != nullptr) {
+    attrInt->numDistinct = numDistinct;
+    return;
+  }
+
+  AttributeStat<double> *attrDouble = std::get_if<AttributeStat<double>>(&attr);
+  if (attrDouble != nullptr) {
+    attrDouble->numDistinct = numDistinct;
+    return;
+  }
+
+  AttributeStat<std::string> *attrString =
+      std::get_if<AttributeStat<std::string>>(&attr);
+  if (attrString != nullptr) {
+    attrString->numDistinct = numDistinct;
+  }
+}
+
+double Stats::GetHistogramEstimate(AttributeType &attr, char *val,
+                                   ComparisonOp &op) {
+  switch (attr.index()) {
+  case 0:
+    return std::get_if<AttributeStat<int>>(&attr)->histogram.GetEstimate(
+        std::stoi(val), op);
+  case 1:
+    return std::get_if<AttributeStat<double>>(&attr)->histogram.GetEstimate(
+        std::stod(val), op);
+  default:
+    return std::get_if<AttributeStat<std::string>>(&attr)
+        ->histogram.GetEstimate(val, op);
+  }
+}
+
+void Stats::SplitString(char *originalString, std::string &attrName,
+                        std::string &relName) {
 
   std::string temp = originalString;
 
@@ -15,8 +61,8 @@ void splitString(char *originalString, std::string &attrName,
   }
 }
 
-void resolveRelationName(const std::unordered_set<std::string> &relNames,
-                         std::string &relName) {
+void Stats::ResolveRelationName(const std::unordered_set<std::string> &relNames,
+                                std::string &relName) {
   if (relNames.size() == 0) {
     std::cerr << "No relations supplied to resolve" << std::endl;
     exit(1);
@@ -37,7 +83,7 @@ void resolveRelationName(const std::unordered_set<std::string> &relNames,
   }
 }
 
-void validateAttributeNames(
+void Stats::ValidateAttributeNames(
     struct AndList *parseTree,
     std::unordered_set<std::string> &relAttributeNames) {
 
@@ -64,7 +110,7 @@ void validateAttributeNames(
       if (myOr->left->left->code == NAME) {
         std::string attrName;
         std::string relName;
-        splitString(myOr->left->left->value, attrName, relName);
+        SplitString(myOr->left->left->value, attrName, relName);
         if (relAttributeNames.find(attrName) == relAttributeNames.end()) {
           std::cerr << "CNF uses attribute not found in the relations "
                        "specified in RelNames"
@@ -76,7 +122,7 @@ void validateAttributeNames(
       if (myOr->left->right->code == NAME) {
         std::string attrName;
         std::string relName;
-        splitString(myOr->left->right->value, attrName, relName);
+        SplitString(myOr->left->right->value, attrName, relName);
         if (relAttributeNames.find(attrName) == relAttributeNames.end()) {
           std::cerr << "CNF uses attribute not found in the relations "
                        "specified in RelNames"
@@ -88,8 +134,8 @@ void validateAttributeNames(
   }
 }
 
-void getAttrNameFromMap(
-    std::unordered_map<std::string, AttributeStat<AttributeType>> &attrMap,
+void Stats::GetAttrNameFromMap(
+    const std::unordered_map<std::string, AttributeType> &attrMap,
     std::unordered_set<std::string> &attrNames) {
   for (auto const &attrPair : attrMap)
     attrNames.insert(attrPair.first);

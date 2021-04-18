@@ -36,7 +36,6 @@ void doWork(GroupByInfo *info) {
   int intResult = 0;
   double doubleResult = 0.0;
   bool isInt = true;
-  int cnt = 0;
   while (tempPipe.Remove(&buffer)) {
     int tempInt = 0;
     double tempDouble = 0.0;
@@ -62,7 +61,6 @@ void doWork(GroupByInfo *info) {
 
       // "buffer" becomes the start of the new group
       recordToCompare = buffer;
-      cnt++;
     }
   }
 

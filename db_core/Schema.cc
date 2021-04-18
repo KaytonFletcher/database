@@ -147,6 +147,8 @@ Schema ::Schema(const char *fName, const char *relName) {
 
 Schema ::~Schema() {
   delete[] myAtts;
-  free((void *)fileName);
+  if (fileName != nullptr) {
+    free((void *)fileName);
+  }
   myAtts = 0;
 }

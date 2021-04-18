@@ -14,6 +14,29 @@ struct Attribute {
   char *name = nullptr;
   Type myType;
 
+  Attribute() = default;
+  Attribute(const Attribute &other) {
+
+    if (other.name != nullptr) {
+      this->name = strdup(other.name);
+    }
+
+    this->myType = other.myType;
+  }
+
+  Attribute &operator=(const Attribute &other) {
+    if (this->name != nullptr) {
+      free(name);
+    }
+
+    if (other.name != nullptr) {
+      this->name = strdup(other.name);
+    }
+
+    this->myType = other.myType;
+    return *this;
+  }
+
   ~Attribute() {
     // free is used because strdup requires it to deallocate memory
     free(name);
@@ -50,6 +73,30 @@ public:
 
   // this composes a schema instance in-memory
   Schema(const char *fName, int num_atts, Attribute **atts);
+
+  Schema(const Schema &other) {
+    this->numAtts = other.numAtts;
+    this->fileName =  strdup(other.fileName);
+
+    this->myAtts = new Attribute[this->numAtts];
+    for (int i = 0; i < this->numAtts; i++) {
+      this->myAtts[i] = other.myAtts[i];
+    }
+  }
+
+  Schema &operator=(const Schema &other) {
+    delete[] this->myAtts;
+    free((void *)fileName);
+
+    this->numAtts = other.numAtts;
+    this->fileName = strdup(other.fileName);
+
+    this->myAtts = new Attribute[this->numAtts];
+    for (int i = 0; i < this->numAtts; i++) {
+      this->myAtts[i] = other.myAtts[i];
+    }
+    return *this;
+  }
 
   // this constructs a sort order structure that can be used to
   // place a lexicographic ordering on the records using this type of schema

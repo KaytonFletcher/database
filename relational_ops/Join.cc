@@ -79,7 +79,6 @@ void doWork(JoinInfo *info) {
     }
 
     if (!rightEmpty) {
-      std::cout << "more in right!" << std::endl;
       while (outPipeR.Remove(&rightBuffer)) {
       }
     }

@@ -9,49 +9,75 @@
 #include "../ParseTree.h"
 #include "../db_core/Pipe.h"
 #include "../db_file/DBFile.h"
+#include "../relational_ops/Count.h"
 #include "AttributeStat.h"
 #include "Histogram.h"
+#include "JoinStat.h"
 #include "RelationStat.h"
 #include "StatsHelper.h"
 
-extern "C" struct YY_BUFFER_STATE *yy_scan_string(const char *);
-extern "C" int yyparse(void);
-extern struct AndList *final;
+struct FutureJoin {
+  RelationID &leftRelID;
+  std::string &leftAttrName;
+  RelationID &rightRelID;
+  std::string &rightAttrName;
+};
 
 class Statistics {
 private:
-  std::vector<RelationStat> relations;
-  std::unordered_map<std::string, int> relationIndicies;
+  int nextJoinID = 0;
 
-  // maps attribute name to the relation names that have the attribute
-  std::unordered_map<std::string, std::unordered_set<std::string>> attributes;
-  std::unordered_map<std::string, std::unordered_set<std::string>> joins;
+  std::unordered_map<int, JoinStat> joinIDToJoinStat;
+  std::unordered_map<std::string, RelationID> nameToRelationID;
+  std::unordered_map<std::string,
+                     std::unordered_set<RelationID, RelationID::HashFunction>>
+      attributes;
 
-  void validateRelNames(char **relNames, int numToJoin,
-                        struct AndList *parseTree,
-                        std::vector<std::unordered_set<std::string> *> &groups);
+  void validateInput(struct AndList *parseTree, char **relNames, int numToJoin,
+                     std::vector<JoinBundle> &joins);
 
-  void fetchRecordsForHistogram(std::string &dbFileName, std::string &attrName,
-                                std::string &relationName, Pipe &outPipe) {
-    DBFile dbfile;
-    dbfile.Open((this->dbfile_dir + dbFileName).c_str());
-    Pipe inPipe(100);
+  RelationID determineRelation(char *originalString, std::string &attrName);
 
-    std::string cnfStr = "(" + attrName + ")";
-    yy_scan_string(cnfStr.c_str());
-    yyparse();
+  void cleanupJoin(JoinStat &join, int oldJoinID, int newJoinID,
+                   int &startingIndex);
 
-    OrderMaker order;
+  std::pair<double, int> getEstimate(char *inputAttrName, char *literalValue,
+                                     ComparisonOp *op,
+                                     std::vector<double> &orProbs) {
+    std::string attrName;
+    RelationID relID = this->determineRelation(inputAttrName, attrName);
 
-    CNF cnf;
-    Record literal;
+    JoinStat &join = this->joinIDToJoinStat.at(relID.joinID);
 
-    Schema schema(catalog_path.c_str(), relationName.c_str());
+    auto est = join.SelectEstimate(attrName, relID.pos, literalValue, *op);
 
-    cnf.GrowFromParseTree(final, &schema, literal);
-    cnf.GetSortOrders(order);
+    orProbs.push_back(est.first);
+    return est;
+  }
 
-    BigQ sorter(inPipe, outPipe, order, 512);
+  void equiJoin(FutureJoin &futureJoin, std::vector<double> &andProbs) {
+    JoinStat &leftJoin = this->joinIDToJoinStat.at(futureJoin.leftRelID.joinID);
+    JoinStat &rightJoin =
+        this->joinIDToJoinStat.at(futureJoin.rightRelID.joinID);
+
+    int index = leftJoin.relations.size();
+
+    double joinProb = 1.0;
+    if (!andProbs.empty()) {
+      joinProb = andProbs[0];
+
+      for (uint i = 1; i < andProbs.size(); i++) {
+        joinProb *= andProbs[i];
+      }
+    }
+
+    int leftJoinEst = leftJoin.JoinEstimate(
+        futureJoin.leftAttrName, futureJoin.leftRelID.pos, rightJoin,
+        futureJoin.rightAttrName, futureJoin.rightRelID.pos);
+    leftJoin.EquiJoin(rightJoin, leftJoinEst, joinProb);
+
+    this->cleanupJoin(rightJoin, futureJoin.rightRelID.joinID,
+                      futureJoin.leftRelID.joinID, index);
   }
 
   inline static const std::string settings = "test.cat";
@@ -69,8 +95,8 @@ public:
   Statistics();
   Statistics(Statistics &copyMe); // Performs deep copy
   ~Statistics();
-  int NumRelations() { return this->relations.size(); }
-  int NumAttributes() { return this->attributes.size(); }
+  int NumRelations() { return this->nameToRelationID.size(); }
+  int NumUniqueAttributes() { return this->attributes.size(); }
   int NumRelationsWithAttribute(const std::string &attr) {
     if (this->attributes.find(attr) != this->attributes.end()) {
       return this->attributes[attr].size();
