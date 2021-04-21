@@ -25,8 +25,6 @@ double GetHistogramEstimate(AttributeType &attr, char* val, ComparisonOp& op);
 void SplitString(char *originalString, std::string &attrName,
                  std::string &relName);
 
-void ResolveRelationName(const std::unordered_set<std::string> &relNames,
-                         std::string &relName);
 
 // parses AndTree looking for all the attributes used in the CNF
 void ValidateAttributeNames(struct AndList *parseTree,

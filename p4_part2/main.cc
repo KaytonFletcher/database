@@ -1,10 +1,18 @@
 
 #include <iostream>
+#include <string>
+#include <unordered_map>
 
 #include "../ParseTree.h"
+#include "../optimizer/Print.h"
+#include "../optionals/Relation.h"
+#include "../tpch/Generator.h"
+#include "../optimizer/QueryPlan.h"
 
-using namespace std;
+// SELECT SUM DISTINCT (a.b + b), d.g FROM a AS b WHERE ('foo' > this.that OR 2
+// = 3) AND (12 > 5) GROUP BY a.f, c.d, g.f
 
+extern struct FuncOperator *finalFunction;
 extern struct TableList *tables;
 extern struct AndList *whereList;
 extern struct NameList *groupingAtts;
@@ -18,24 +26,8 @@ int yyparse(void); // defined in y.tab.c
 
 int main() {
   yyparse();
+  // PrintParsedSQL();
+  QueryPlan plan;
+  plan.GenerateSelectFiles();
 
-  while (tables != nullptr) {
-    std::cout << "Table name: " << tables->tableName << std::endl;
-    std::cout << "Table alias: " << tables->aliasAs << std::endl;
-
-    tables = tables->next;
-  }
-
-  while (whereList) {
-    struct OrList *myOr = whereList->left;
-    while (myOr) {
-      std::cout << "Or Code: " << myOr->left->code << std::endl;
-      std::cout << "Or Left Code: " << myOr->left->left->code << std::endl;
-      std::cout << "Or Right Code: " << myOr->left->right->code << std::endl;
-
-      myOr = myOr->rightOr;
-    }
-
-    whereList = whereList->rightAnd;
-  }
 }

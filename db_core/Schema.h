@@ -68,6 +68,8 @@ public:
   // this finds the type of the given attribute
   Type FindType(const char *attName);
 
+  void Print(const std::string& aliasRelName) const;
+
   // this reads the specification for the schema in from a file
   Schema(const char *fName, const char *relName);
 
@@ -76,7 +78,7 @@ public:
 
   Schema(const Schema &other) {
     this->numAtts = other.numAtts;
-    this->fileName =  strdup(other.fileName);
+    this->fileName = strdup(other.fileName);
 
     this->myAtts = new Attribute[this->numAtts];
     for (int i = 0; i < this->numAtts; i++) {

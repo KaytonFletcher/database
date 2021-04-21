@@ -26,6 +26,24 @@ Type Schema ::FindType(const char *attName) {
   return Int;
 }
 
+void Schema::Print(const std::string &aliasRelName) const {
+  for (int i = 0; i < this->numAtts; i++) {
+    std::string type;
+    switch (this->myAtts[i].myType) {
+    case Int:
+      type = "INT";
+      break;
+    case Double:
+      type = "DOUBLE";
+      break;
+    default:
+      type = "STRING";
+    }
+    std::cout << " Att " << aliasRelName << "." << this->myAtts[i].name << ": "
+              << type << std::endl;
+  }
+}
+
 int Schema ::GetNumAtts() { return numAtts; }
 
 Attribute *Schema ::GetAtts() { return myAtts; }

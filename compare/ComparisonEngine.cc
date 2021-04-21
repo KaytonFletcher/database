@@ -1,5 +1,4 @@
 #include "ComparisonEngine.h"
-#include "OrderMaker.h"
 
 // returns a -1, 0, or 1 depending upon whether left is less then, equal to, or
 // greater than right, depending upon the OrderMaker

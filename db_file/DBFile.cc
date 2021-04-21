@@ -1,5 +1,4 @@
 #include "DBFile.h"
-#include <fstream>
 
 DBFile::DBFile() : isOpen(false), db(nullptr) {}
 

@@ -1,6 +1,6 @@
-#include "../relational_ops/GroupBy.h"
-#include "../relational_ops/WriteOut.h"
-#include "../test.h"
+#include "../../relational_ops/GroupBy.h"
+#include "../../relational_ops/WriteOut.h"
+#include "../../test.h"
 #include "gtest/gtest.h"
 #include <cstdlib>
 

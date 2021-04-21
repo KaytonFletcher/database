@@ -1,5 +1,4 @@
 #include "HeapDB.h"
-#include <fstream>
 
 HeapDB::HeapDB() : currPage(0), numPages(0), pageDirty(false) {}
 

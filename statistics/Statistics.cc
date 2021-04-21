@@ -1,12 +1,4 @@
 #include "Statistics.h"
-#include "AttributeStat.h"
-#include "JoinStat.h"
-#include "RelationStat.h"
-#include "StatsHelper.h"
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <sstream>
 
 using AttributeType = std::variant<AttributeStat<int>, AttributeStat<double>,
                                    AttributeStat<std::string>>;

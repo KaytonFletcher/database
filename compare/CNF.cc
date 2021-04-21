@@ -1,6 +1,20 @@
 #include "CNF.h"
 
 using namespace std;
+
+void CNF::GrowSimpleFromSchema(Schema &schema) {
+  Attribute &attr = schema.GetAtts()[0];
+
+  this->numAnds = 1;
+  this->orLens[0] = 1;
+  this->orList[0][0].attType = attr.myType;
+  this->orList[0][0].op = Equals;
+  this->orList[0][0].operand1 = Left;
+  this->orList[0][0].operand2 = Left;
+  this->orList[0][0].whichAtt1 = 0;
+  this->orList[0][0].whichAtt2 = 0;
+}
+
 void CNF::BuildQuery(OrderMaker &query, OrderMaker &sortOrder) {
 
   query.numAtts = 0;

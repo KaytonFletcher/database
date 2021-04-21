@@ -20,6 +20,9 @@ class CNF {
   int numAnds;
 
 public:
+
+  void GrowSimpleFromSchema(Schema& schema);
+  
   void BuildQuery(OrderMaker &query, OrderMaker &sortOrder);
   
   // this returns an instance of the OrderMaker class that

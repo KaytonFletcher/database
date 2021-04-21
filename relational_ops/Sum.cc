@@ -1,5 +1,4 @@
 #include "Sum.h"
-#include <string>
 
 void doWork(SumInfo *info) {
   Record buffer;

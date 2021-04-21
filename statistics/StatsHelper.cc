@@ -61,28 +61,6 @@ void Stats::SplitString(char *originalString, std::string &attrName,
   }
 }
 
-void Stats::ResolveRelationName(const std::unordered_set<std::string> &relNames,
-                                std::string &relName) {
-  if (relNames.size() == 0) {
-    std::cerr << "No relations supplied to resolve" << std::endl;
-    exit(1);
-  }
-
-  if (relNames.size() > 1) {
-    auto itr = relNames.find(relName);
-    if (relName.empty() || itr == relNames.end()) {
-      std::cerr << "Multiple relations have this attribute, must specify "
-                   "relation"
-                << std::endl;
-      exit(1);
-    } else if (relName.empty()) {
-      relName = *itr;
-    }
-  } else {
-    relName = *relNames.begin();
-  }
-}
-
 void Stats::ValidateAttributeNames(
     struct AndList *parseTree,
     std::unordered_set<std::string> &relAttributeNames) {

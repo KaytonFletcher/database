@@ -1,7 +1,4 @@
 #include "AttributeStat.h"
-#include "Histogram.h"
-#include <bits/types/FILE.h>
-#include <sstream>
 
 std::istream &operator>>(std::istream &is, AttributeStat<int> &s) {
   int numTuples = 0;

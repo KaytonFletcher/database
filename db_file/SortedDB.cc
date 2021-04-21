@@ -1,6 +1,4 @@
 #include "SortedDB.h"
-#include <iterator>
-#include <sstream>
 
 SortedDB::SortedDB() : currPage(0) {}
 

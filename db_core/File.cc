@@ -1,5 +1,4 @@
 #include "File.h"
-#include <stdexcept>
 
 using namespace std;
 
